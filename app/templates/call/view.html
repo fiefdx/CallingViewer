@@ -1,0 +1,95 @@
+{% extends "../base.html" %}
+<!-- 2015-09-19 YangHaitao -->
+{% block title %}
+{{_("CV - ")}}{{file_name}}
+{% end %}
+
+{% block stylesheet %}
+<link href="{{ static_url('css/input.css') }}" rel="stylesheet" >
+<link href="{{ static_url('js/highlight/styles/monokai-sublime.css') }}" rel="stylesheet" >
+<style type="text/css">
+.hljs-line-numbers {
+    text-align: right;
+    border-right: 1px solid #ccc;
+    color: #999;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.hljs-highlight-line {
+    text-align: right;
+    border-right: 0px solid #000;
+    background-color: #ccc;
+    color: #00f;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+</style>
+{% end %}
+
+{% block header %}
+<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="navbar-header"> 
+        <a id="navbar_header" class="navbar-brand" href="/">{{_("CallingViewer")}}</a>
+    </div>
+    <div id="file_path_div" class="collapse navbar-collapse">
+    </div>
+</div>
+{% end %}
+
+{% block body %}
+<div class="col-lg-12" style="margin-top: 0px; padding: 0px;">
+    <div id="code_div" class="col-lg-12" style="padding: 0px; overflow: auto;">
+    </div>
+</div>
+{% end %}
+
+{% block javascript %}
+<script src="{{ static_url('js/highlight/highlight.pack.js') }}"></script>
+<script src="{{ static_url('js/highlight/highlightjs-line-numbers-custom.js') }}"></script>
+<script type="text/javascript">
+var result = "{% module JsString(result) %}";
+var line = 0;
+var data = JSON.parse(result);
+if (data.path) {
+    $("#file_path_div").append(
+        '<p class="navbar-text" style="text-align: center; padding: 12px;">' + data.path + '</p>'
+    );
+}
+
+if (data.code) {
+    $("#code_div").append(
+        '<pre><code class="golang">' + data.code + '</code></pre>'
+    );
+}
+
+if (data.line) {
+    line = data.line;
+}
+
+// window.onload = window.onresize = function(){
+//     $(document).ready(function(){
+//         var window_height = $(window).height();
+//         var window_width = $(window).width();
+//         $("#code_div").height(window_height - 84);
+//         console.log("window width: " + window_width + "px");
+//     });
+// }
+
+$(document).ready(function(){
+    hljs.initHighlightingOnLoad();
+    hljs.initLineNumbersOnLoad(line, 75);
+    // var window_height = $(window).height();
+    // var window_width = $(window).width();
+    // $("#code_div").height(window_height - 84);
+    // console.log("window width: " + window_width + "px");
+});
+</script>
+{% end %}

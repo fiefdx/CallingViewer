@@ -1,0 +1,4 @@
+0.0.1: just can use
+0.0.2: support recursion relation
+0.0.3: support autocomplete
+0.0.4: improve Build.py, no need to run callgraph manually anymore

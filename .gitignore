@@ -1,0 +1,26 @@
+# ignore packages
+
+*.zip
+*.rar
+*.tar.gz
+*.tar
+*.7z
+
+# ignore files
+
+*.log
+*.pid
+*.pyc
+*.callgraph
+*.conf
+
+# ignore dirs
+
+DATA/index/*
+DATA/table_*
+
+# track dirs
+
+!.DATA
+!.doc
+!.requires

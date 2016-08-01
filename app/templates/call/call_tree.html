@@ -1,0 +1,212 @@
+{% extends "../base.html" %}
+<!-- 2015-09-19 YangHaitao -->
+{% block title %}
+{{_("CV - ")}}{{version}}
+{% end %}
+
+{% block stylesheet %}
+<link href="{{ static_url('css/input.css') }}" rel="stylesheet" >
+<link href="{{ static_url('js/jstree/themes/default/style.css') }}" rel="stylesheet" >
+<link href="{{ static_url('css/typeahead.css') }}" rel="stylesheet" />
+{% end %}
+
+{% block body %}
+<div id="row_container" class="row">
+    <div id="view_container" class="row-fluid">
+        <form id="query_form" class="form-horizontal col-lg-6" method="post" style="margin-top: 30px;">
+            <div class="col-lg-10">
+                <div class="input-group">
+                    <input type="text" class="typeahead form-control" placeholder = "{{_("Type Function Name...")}}" id="search_input" name="query">
+                    <span class="input-group-btn">
+                        <button id="search_button" class="btn btn-primary" type="submit">{{_("Search")}}</button>
+                    </span>
+                </div>
+                <div class="input-group" style="margin-top: 5px;">
+                    <span class="input-group-addon">
+                        <span>{{_("Called")}}</span>
+                        <input id="called" name="called" value="true" type="checkbox">
+                    </span>
+                    <input type="text" class="form-control" placeholder = "{{_("Type Filter...")}}" id="filter_input" name="filter">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="col-lg-12" style="margin-top: 20px;">
+    <div id="search_result" class="col-lg-12">
+    </div>
+    <div id="jstree_div" class="col-lg-12">
+    </div>
+</div>
+{% end %}
+
+{% block javascript %}
+<script src="{{ static_url('js/jstree/jstree.js') }}"></script>
+<script src="{{ static_url('js/typeahead.bundle.js') }}"></script>
+<script src="{{ static_url('js/handlebars-v1.3.0.js') }}"></script>
+<script type="text/javascript">
+function get_leaf(q) {
+    var result = {"nodes": [], "tree": [], "flag": false};
+    var ajax_url = "/leaf";
+    $.ajax({
+        type: "post",
+        async: false,
+        url: ajax_url,
+        data: {"query": JSON.stringify(q), 
+               "called": $("input[type=checkbox][name=called]").prop("checked"), 
+               "filter": $("#filter_input").val()},
+        success: function(data, textStatus){
+            if(textStatus == "success"){
+                if(typeof data.nodes == "undefined")
+                    result.flag = null;
+                else
+                {
+                    result.nodes = data.nodes;
+                    result.tree = data.tree;
+                    result.flag = true;
+                }
+            }
+            else
+            {
+                result.flag = false;
+            }
+        }
+    });
+    return result;
+};
+
+function include(arr,obj) {
+    return (arr.indexOf(obj) != -1);
+}
+
+$(document).ready(function(){
+    var result = "{% module JsString(result) %}";
+    var data = JSON.parse(result);
+
+    if (data.query) {
+        $("#search_input").val(data.query);
+    }
+
+    if (data.called) {
+        $("input[type=checkbox][name=called]").prop('checked', true);
+    }
+
+    if (data.filter) {
+        $("#filter_input").val(data.filter);
+    }
+
+    var r_datas = new Bloodhound({
+        datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.string); },
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        limit: 10,
+        remote: {
+            url: '/search?q=%QUERY&size=10',
+            filter: function(list) {
+                return $.map(list, function(complete_string) { return { string: complete_string }; });
+            }
+        }
+    });
+ 
+    r_datas.initialize();
+ 
+    $('.typeahead').typeahead({
+        highlight: true,
+        minLength: 2
+    }, 
+    {
+        name: 'complete_string',
+        displayKey: 'string',
+        source: r_datas.ttAdapter()
+    });
+
+    $('#jstree_div').jstree({ 
+        'core' : {
+            'data' : data.tree,
+            'check_callback': true
+        },
+        'plugins' : [ "types", "state", "unique", "contextmenu" ],
+        'types' : {
+            'tree' : {
+                "icon": "{{ static_url('js/jstree/themes/custom/24/circle_green.png') }}"
+            },
+            'leaf' : {
+                "icon": "{{ static_url('js/jstree/themes/custom/24/circle_blue.png') }}"
+            },
+            'loop' : {
+                "icon": "{{ static_url('js/jstree/themes/custom/24/circle_red.png') }}"
+            }
+        },
+        'contextmenu': {
+            "items": function(node) {
+                var tree = $('#jstree_div').jstree(true);
+                return {
+                    "Go To Context": {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Go To Context",
+                        "action": function (obj) {
+                            // console.log("Open: ", node.id);
+                            window.open('/view?q=' + node.id + '&d=false&called=' + $("input[type=checkbox][name=called]").prop("checked"), '_blank');
+                        }
+                    },
+                    "Go To Definition": {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Go To Definition",
+                        "action": function (obj) {
+                            // console.log("Open: ", node.id);
+                            window.open('/view?q=' + node.id + '&d=true&called=' + $("input[type=checkbox][name=called]").prop("checked"), '_blank');
+                        }
+                    }
+                };
+            }
+        }
+    });
+
+    $('#jstree_div').on('before_open.jstree', function(e, data) {
+        // console.log("open node: ", data.node.text);
+        r = get_leaf(data.node.children);
+        // console.log("r: ", r);
+        if (r.flag) {
+            r.tree.forEach(function (value, index, array_notes) {
+                // console.log(index + ' ' + value);
+                $('#jstree_div').jstree(true).set_type(value.id, "tree");
+            });
+            r.nodes.forEach(function (value, index, array_notes) {
+                // console.log(index + ' ' + value);
+                // createNode(value.parent, value.id, value.text, "last", value.type);
+                var path = $('#jstree_div').jstree(true).get_path($('#jstree_div').jstree(true).get_node(value.parent));
+                if (include(path, value.text)) {
+                    $('#jstree_div').jstree(true).set_type(value.parent, "loop");
+                    $('#jstree_div').jstree(true).set_type(value.id, "loop");
+                    console.log("loop: ", value.parent, " ", value.id);
+                } else {
+                    createNode(value.parent, value.id, value.text, "last", value.type);
+                }
+                // console.log('path: ', path);
+            });
+            // $('#jstree_div').jstree(true).refresh_node(data.node);
+        }
+    });
+
+    // $('#jstree_div').on('select_node.jstree', function(e, data) {
+    //     console.log("select node: ", data.node.text);
+    // });
+
+    // When the jsTree is ready, add two more records.
+    // $('#jstree_div').on('ready.jstree', function (e, data) {
+    //     createNode("#ajson3", "ajson5", "Another Child", "last");
+    //     createNode("#ajson3", "ajson6", "Another One Child", "last");
+    //     console.log("test");
+    // });
+
+    // Helper method createNode(parent, id, text, position).
+    // Dynamically adds nodes to the jsTree. Position can be 'first' or 'last'.
+    function createNode(parent_node, new_node_id, new_node_text, position, type) {
+        $('#jstree_div').jstree(true).create_node(parent_node, { "text":new_node_text, "id":new_node_id, "type": type }, position, null, false);
+        // console.log("Add ", new_node_text);
+    }
+
+});
+</script>
+{% end %}

@@ -1,0 +1,135 @@
+.container {
+    max-width: 1920px;
+    padding-left:0; 
+    padding-right:0;
+}
+
+#row_container {
+    text-align: left;
+    margin-top: -20px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+#input_area {
+    /*top: 60px;*/
+    width: 230px; /*165*/
+    position: absolute;
+    text-align: center;
+    margin-left: 10px;
+}
+
+#text_input {
+    height: 100px; 
+    /*font-size: 13px;*/
+    resize: none; 
+    /*color: #111111; */
+    margin-left: auto; 
+    margin-right: auto; 
+    display: block; 
+    width: 200px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+#input_list {
+    overflow-y: auto; 
+    height: 0px;
+    margin-bottom: 15px;
+    text-align: left;
+    width: 280px; /*300*/
+    left: 230px; /*190*/
+    top: 60px;
+    position: absolute;
+}
+
+.input_list_item {
+    height: 30px;
+    font-size: 16px;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+
+#inputs_list_ul {
+    list-style: none outside none;
+    text-align: left;
+    margin-bottom: 0px;
+}
+
+#input_num_badge {
+    background-color: #9999CC;
+}
+
+.input_item_key {
+    color: rgb(17, 34, 204);
+    font-size: 14px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    overflow: ellipsis; 
+    padding : 0px;
+    margin-bottom: 0px;
+}
+
+#display_matrix {
+    font-size: 6px;
+    width: 100px; /*300*/
+    left: 505px; /*190*/
+    top: 60px;
+    position: absolute;
+}
+
+#text_output {
+    height: 110px; 
+    font-size: 13px;
+    resize: none; 
+    /*color: #111111; */
+    margin-left: auto; 
+    margin-right: auto; 
+    display: block; 
+    width: 100px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+#input_in_set_list {
+    overflow-y: auto; 
+    height: 0px;
+    margin-bottom: 15px;
+    text-align: left;
+    width: 280px; /*300*/
+    left: 625px; /*190*/
+    top: 60px;
+    position: absolute;
+}
+
+#inputs_in_set_list_ul {
+    list-style: none outside none;
+    text-align: left;
+    margin-bottom: 0px;
+}
+
+#input_set_list {
+    overflow-y: auto; 
+    height: 0px;
+    margin-bottom: 15px;
+    text-align: left;
+    width: 280px; /*300*/
+    left: 912px; /*190*/
+    top: 60px;
+    position: absolute;
+}
+
+#sets_list_ul {
+    list-style: none outside none;
+    text-align: left;
+    margin-bottom: 0px;
+}
+

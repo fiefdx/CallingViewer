@@ -1,0 +1,49 @@
+{% extends "../base.html" %}
+<!-- 2015-09-19 YangHaitao -->
+{% block title %}
+{{_("CallingViewer")}}
+{% end %}
+
+{% block stylesheet %}
+<link href="{{ static_url("css/input.css") }}" rel="stylesheet" >
+{% end %}
+
+{% block body %}
+<div id="row_container" class="row">
+    <div id="view_container" class="row-fluid">
+        <form id="query_form" class="form-horizontal col-lg-6" method="post" style="margin-top: 30px;">
+            <div class="col-lg-12">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder = "{{_("Type Function Name...")}}" id="search_input" name="query">
+                    <span class="input-group-btn">
+                        <button id="search_button" class="btn btn-primary" type="submit">{{_("Submit")}}</button>
+                    </span>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="col-lg-12" style="margin-top: 20px;">
+    <div id="search_result" class="col-lg-12">
+    </div>
+</div>
+{% end %}
+
+{% block javascript %}
+<script type="text/javascript">
+$(document).ready(function(){
+    var result = "{% module JsString(result) %}";
+    var data = JSON.parse(result);
+    if (data.query) {
+        $("#search_input").val(data.query);
+    }
+    if (data.tree) {
+        $("#search_result").append(
+            '<div class="result_item">' + 
+            '<pre><code>' + data.tree + '</code></pre>' +
+            '</div>'
+        );
+    }
+});
+</script>
+{% end %}

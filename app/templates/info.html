@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}
+    {{_("Info")}}
+{% end %}
+{% block header %}
+{% end %}
+{% block body %}
+<div class="row">
+&nbsp;&nbsp;&nbsp;&nbsp;
+</div>
+<div class="row">
+&nbsp;&nbsp;&nbsp;&nbsp;
+</div>
+<div class="row">
+&nbsp;&nbsp;&nbsp;&nbsp;
+</div>
+<div class="row">
+&nbsp;&nbsp;&nbsp;&nbsp;
+</div>
+<div class="row">
+    <div class="col-md-2">
+        &nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+    <div class="col-md-8" style = "text-align:center;">
+        <div class="well">
+            <span>
+                {{info_msg}}
+            </span>
+            <span id="info_timer">
+            </span>
+            <span>
+                {{_("seconds or click")}} 
+                <a href="/"> {{_("here")}}</a> 
+                {{_("to redirect to home page")}}
+            </span>
+        </div>
+    </div>
+    <div class="col-md-2">
+        &nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+</div>
+
+{% end %}
+
+{% block public_js %}
+{% end %}
+
+{% block javascript %}
+<script type="text/javascript">
+$(document).ready(function(){
+    var local = window.location.host;
+    var seconds = 5;
+    var t;
+    timedCount();
+
+    function timedCount() {
+        if (seconds > 0) {
+            $('span#info_timer').text(seconds);
+            seconds--;
+        } else {
+            $('span#info_timer').text(seconds);
+            window.location.href = location.protocol + "//" + local + "/";
+        }
+        t = setTimeout(timedCount, 1000);
+    }
+});
+</script>
+{% end %}
