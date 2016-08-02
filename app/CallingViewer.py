@@ -42,7 +42,7 @@ if __name__ == "__main__":
     fp = open(pid_path, "wb")
     fp.write(PID)
     fp.close()
-    os.environ["GOPATH"] = "%s:%s" % (os.environ["GOPATH"], CONFIG["go_path"])
+    os.environ["GOPATH"] = "%s%s" % (os.environ["GOPATH"] + ":" if os.environ.has_key("GOPATH") else "", CONFIG["go_path"])
     tornado.options.parse_command_line()
     logger.config_logging(file_name = options.log, 
                           log_level = CONFIG["log_level"], 

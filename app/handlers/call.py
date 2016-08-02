@@ -67,7 +67,8 @@ class CallHandler(BaseHandler):
         data["tree"] = tree
         data["called"] = called
         data["filter"] = filter_str
-        self.render("call/call_tree.html", current_nav = "View", version = CONFIG["version"], result = json.dumps(data))
+        self.write(data)
+        # self.render("call/call_tree.html", current_nav = "View", version = CONFIG["version"], result = json.dumps(data))
 
 class CallAjaxHandler(BaseHandler):
     def post(self):
@@ -213,34 +214,4 @@ class SearchAjaxHandler(BaseHandler):
             result.append(fields["name"])
             LOG.debug("Doc_id: %s, %s", fields["doc_id"], fields["name"])
         self.write(json.dumps(result))
-
-# class CallHandler(BaseHandler):
-#     def get(self):
-#         self.render("call/call.html", current_nav = "View", result = json.dumps({}))
-
-#     def post(self):
-#         query = self.get_argument("query", "").strip()
-#         LOG.info("query: %s", query)
-
-#         called = False
-
-#         finder = Finder(CONFIG["data_path"], called = called)
-#         finder.find_all_relation(query)
-
-#         tree = Tree()
-
-#         tmp_file_path = os.path.join(CONFIG["data_path"], "tmp", query.replace("/", ".").replace("*","_") + (".called.rel" if called == True else ".calling.rel"))
-#         tmp_fp = open(tmp_file_path, "rb")
-#         line = tmp_fp.readline()
-#         while line != "":
-#             line = line.strip()
-#             line_list = line.split(" -> ")
-#             tree.add(None, line_list)
-#             line = tmp_fp.readline()
-#         tmp_fp.close()
-        
-#         data = {}
-#         data["query"] = query
-#         data["tree"] = tree.tree().encode("utf-8")
-#         self.render("call/call.html", current_nav = "View", result = json.dumps(data))
 		

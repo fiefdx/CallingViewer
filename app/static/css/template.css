@@ -1,5 +1,5 @@
 div#body_container {
-    margin-top: 51px;
+    margin-top: 0px;
     max-width: 1920px;
     margin-left: 0px;
     margin-right: 0px;
@@ -16,29 +16,12 @@ a#navbar_header {
     text-align: center;
 }
 
-div.language {
-    padding-top: 5px;
-    padding-bottom: 3px;
-}
-
-div.update_password {
-    padding-top: 10px;
-    padding-bottom: 3px;
-}
-
 div.modal-footer {
     margin-top: 15px;
 }
 
 div.modal-body {
     padding-bottom: 0px;
-}
-
-#form_sign_out,
-#form_delete_user {
-    margin-top: 150px;
-    margin-bottom: 0px; 
-    padding: 0px
 }
 
 .px-input {

@@ -13,6 +13,7 @@ import time
 import json
 
 from config import CONFIG
+from utils.common_utils import sha1sum
 
 LOG = logging.getLogger(__name__)
 
@@ -21,11 +22,18 @@ class Project(object):
         self.go_path = ""
         self.main_path = ""
         self.project_path = ""
+        self.project_name = ""
+        self.sha1 = ""
 
     def to_dict(self):
         return {"go_path": self.go_path,
                 "main_path": self.main_path,
-                "project_path": self.project_path}
+                "project_path": self.project_path,
+                "project_name": self.project_name,
+                "sha1": self.sha1}
+
+    def hash(self):
+        self.sha1 = sha1sum(self.project_path.decode())
 
 class Projects(object):
     PROJECTS = None
@@ -46,8 +54,8 @@ class Projects(object):
         self.__init()
         result = False
         try:
-            if not Projects.PROJECTS.has_key(project.project_path):
-                Projects.PROJECTS[project.project_path] = project.to_dict()
+            if not Projects.PROJECTS.has_key(project.project_name):
+                Projects.PROJECTS[project.project_name] = project.to_dict()
                 with open(self.config_path, "wb") as fp:
                     fp.write(json.dumps(Projects.PROJECTS))
             result = True
@@ -55,28 +63,32 @@ class Projects(object):
             LOG.exception(e)
         return result
 
-    def get(self, project_path):
+    def get(self, project_name):
         self.__init()
         result = False
         try:
-            if Projects.PROJECTS.has_key(project_path):
-                result = Projects.PROJECTS[project_path]
+            if Projects.PROJECTS.has_key(project_name):
+                result = Projects.PROJECTS[project_name]
             else:
                 result = None
         except Exception, e:
             LOG.exception(e)
         return result
 
-    def delete(self, project_path):
+    def delete(self, project_name):
         self.__init()
         result = False
         try:
-            if Projects.PROJECTS.has_key(project_path):
-                del(Projects.PROJECTS[project_path])
+            if Projects.PROJECTS.has_key(project_name):
+                del(Projects.PROJECTS[project_name])
                 with open(self.config_path, "wb") as fp:
                     fp.write(json.dumps(Projects.PROJECTS))
             result = True
         except Exception, e:
             LOG.exception(e)
         return result
+
+    def all(self):
+        self.__init()
+        return Projects.PROJECTS
 

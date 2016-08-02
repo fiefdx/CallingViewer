@@ -1,0 +1,70 @@
+#project_view {
+    top: 60px;
+    width: 250px;
+    position: absolute;
+    text-align: left;
+    margin-left: 10px;
+}
+
+#project_select {
+    margin-bottom: 5px;
+}
+
+#project_tree_view {
+    width: 100%;
+    text-align: left;
+    margin-left: 0px;
+    overflow-x: auto;
+    overflow-y: scroll;
+    margin-bottom: 5px;
+}
+
+#project_tree {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+#project_opration {
+    margin-left: 0px;
+}
+
+#tree_view {
+    top: 60px;
+    left: 250px;
+    width: 800px;
+    position: absolute;
+    margin-left: 0px;
+}
+
+#query_form {
+    margin-left: 5px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+#filter_input_view {
+    margin-top: 5px;
+}
+
+#call_tree_view {
+    margin-top: 5px;
+    margin-left: 5px;
+    padding-left: 0px;
+    padding-right: 0px;
+    overflow-x: auto;
+    overflow-y: scroll;
+}
+
+#form_add {
+    margin-top: 150px;
+    margin-bottom: 0px; 
+    padding: 0px
+}
+
+.modal-content {
+    text-align: center;
+}
+
+.control-label {
+    margin-top: 10px;
+}

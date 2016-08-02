@@ -16,6 +16,7 @@ import handlers.test as test
 from config import CONFIG
 from handlers import test
 from handlers import call
+from handlers import project
 
 cwd = os.path.split(os.path.realpath(__file__))[0]
 
@@ -27,6 +28,7 @@ class Application(tornado.web.Application):
                     (r"/leaf", call.CallAjaxHandler),
                     (r"/search", call.SearchAjaxHandler),
                     (r"/view", call.ViewHandler),
+                    (r"/add/project", project.ProjectAjaxHandler),
                     (r"/test", test.TestHandler),
                     ]
         settings = dict(debug = CONFIG["app_debug"],

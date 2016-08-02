@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    os.environ["GOPATH"] = "%s:%s" % (os.environ["GOPATH"], CONFIG["go_path"])
+    os.environ["GOPATH"] = "%s%s" % (os.environ["GOPATH"] + ":" if os.environ.has_key("GOPATH") else "", CONFIG["go_path"])
     logger.config_logging(file_name = "test.log", 
                           log_level = CONFIG["log_level"], 
                           dir_name = "logs", 
@@ -41,8 +41,10 @@ if __name__ == "__main__":
     p_1.go_path = "go_path"
     p_1.main_path = "main_path"
     p_1.project_path = "project_path"
+    p_1.project_name = "project_name"
+    p_1.hash()
     p.add(p_1)
-    p.delete("project_path")
+    # p.delete("project_path")
     tt = time.time()
     LOG.info("Use Time: %ss", tt - t)
     LOG.info("Test Exit!")
