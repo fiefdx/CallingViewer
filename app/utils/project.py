@@ -13,17 +13,30 @@ import time
 import json
 
 from config import CONFIG
-from utils.common_utils import sha1sum
+from utils.common_utils import sha1sum, listdir
 
 LOG = logging.getLogger(__name__)
 
 class Project(object):
     def __init__(self):
-        self.go_path = ""
-        self.main_path = ""
-        self.project_path = ""
-        self.project_name = ""
-        self.sha1 = ""
+        self.clear()
+
+    def parse_dict(self, source):
+        result = False
+        self.clear()
+        attrs = ["go_path", "main_path", "project_path", "project_name", "sha1"]
+        if hasattr(source, "__getitem__"):
+            for attr in attrs:
+                try:
+                    setattr(self, attr, source[attr])
+                except:
+                    LOG.debug("some exception occured when extract %s attribute to Project object, i will discard it", attr)
+                    continue
+            result = True
+        else:
+            LOG.debug("input param source does not have dict-like method, so i will do nothing at all!")
+            result = False
+        return result
 
     def to_dict(self):
         return {"go_path": self.go_path,
@@ -34,6 +47,25 @@ class Project(object):
 
     def hash(self):
         self.sha1 = sha1sum(self.project_path.decode())
+
+    def listdir(self, path = ""):
+        dirs = []
+        files = []
+        try:
+            if path == "":
+                dirs, files = listdir(self.project_path)
+            elif os.path.exists(path) and os.path.isdir(path):
+                dirs, files = listdir(path)
+        except Exception, e:
+            LOG.exception(e)
+        return dirs, files
+
+    def clear(self):
+        self.go_path = ""
+        self.main_path = ""
+        self.project_path = ""
+        self.project_name = ""
+        self.sha1 = ""
 
 class Projects(object):
     PROJECTS = None

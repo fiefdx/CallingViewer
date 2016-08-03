@@ -18,6 +18,7 @@ from base import BaseHandler, BaseSocketHandler
 from utils.finder import Finder
 from utils.search_whoosh import search_index_no_page
 from utils.index_whoosh import IX
+from utils.project import Project, Projects
 
 LOG = logging.getLogger(__name__)
 
@@ -25,7 +26,36 @@ ID_SP = "____"
 
 class CallHandler(BaseHandler):
     def get(self):
-        self.render("call/call_tree.html", current_nav = "View", version = CONFIG["version"], result = json.dumps({}))
+        projects = Projects()
+        data = {}
+        data["nodes"] = []
+        data["tree"] = []
+        data["projects"] = [v for v in projects.all().itervalues()]
+        data["projects"].sort(lambda x,y : cmp(x['project_name'], y['project_name']))
+        if len(data["projects"]) > 0:
+            nodes = []
+            data["project"] = data["projects"][0]["project_name"]
+            project = Project()
+            project.parse_dict(data["projects"][0])
+            dirs, files = project.listdir()
+            if dirs != [] or files != []:
+                parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "tree"}
+            else:
+                parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "leaf"}
+            for d in dirs:
+                nodes.append({"id": os.path.join(project.project_path, d["name"]), 
+                              "parent": project.project_path, 
+                              "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                              "type": "leaf"})
+            for f in files:
+                nodes.append({"id": os.path.join(project.project_path, f["name"]), 
+                              "parent": project.project_path, 
+                              "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                              "type": "leaf"})
+            nodes.insert(0, parent)
+            data["nodes"] = nodes
+
+        self.render("call/call_tree.html", current_nav = "View", version = CONFIG["version"], result = json.dumps(data))
 
     def post(self):
         query = self.get_argument("query", "").strip()

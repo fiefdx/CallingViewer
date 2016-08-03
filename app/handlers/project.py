@@ -50,5 +50,6 @@ class ProjectAjaxHandler(BaseHandler):
             data["project"] = project_name
         data["nodes"] = []
         data["tree"] = []
-        data["projects"] = [v for _, v in projects.all()]
-        self.write(json.dumps(data))
+        data["projects"] = [v for v in projects.all().itervalues()]
+        data["projects"].sort(lambda x,y : cmp(x['project_name'], y['project_name']))
+        self.write(data)
