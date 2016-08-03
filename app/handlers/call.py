@@ -48,9 +48,9 @@ class CallHandler(BaseHandler):
                 r_filtered = r
         
             if r_filtered != []:
-                tree.append({"id": query, "parent": "#", "text": query, "type": "tree"})
+                parent = {"id": query, "parent": "#", "text": query, "type": "tree"}
             else:
-                tree.append({"id": query, "parent": "#", "text": query, "type": "leaf"})
+                parent = {"id": query, "parent": "#", "text": query, "type": "leaf"}
             for item in r_filtered:
                 if item[0] == query:
                     pass
@@ -61,6 +61,7 @@ class CallHandler(BaseHandler):
                                  "type": "leaf"})
         
             tree.sort(lambda x,y : cmp(x['text'], y['text']))
+            tree.insert(0, parent)
         LOG.debug("tree: %s", tree)
         data = {}
         data["query"] = query
@@ -68,7 +69,6 @@ class CallHandler(BaseHandler):
         data["called"] = called
         data["filter"] = filter_str
         self.write(data)
-        # self.render("call/call_tree.html", current_nav = "View", version = CONFIG["version"], result = json.dumps(data))
 
 class CallAjaxHandler(BaseHandler):
     def post(self):
