@@ -29,6 +29,8 @@ class Application(tornado.web.Application):
                     (r"/search", call.SearchAjaxHandler),
                     (r"/view", call.ViewHandler),
                     (r"/add/project", project.ProjectAjaxHandler),
+                    (r"/project/leaf", project.ProjectAjaxLeafHandler),
+                    (r"/project/view", project.ViewHandler),
                     (r"/test", test.TestHandler),
                     ]
         settings = dict(debug = CONFIG["app_debug"],

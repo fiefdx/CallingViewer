@@ -146,6 +146,35 @@ function get_leaf(q) {
     return result;
 };
 
+function get_project_leaf(q) {
+    var result = {"nodes": [], "tree": [], "flag": false};
+    var ajax_url = "/project/leaf";
+    $.ajax({
+        type: "post",
+        async: false,
+        url: ajax_url,
+        data: {"query": JSON.stringify(q),
+               "project_name": $('#project_select select').val()},
+        success: function(data, textStatus){
+            if(textStatus == "success"){
+                if(typeof data.nodes == "undefined")
+                    result.flag = null;
+                else
+                {
+                    result.nodes = data.nodes;
+                    result.tree = data.tree;
+                    result.flag = true;
+                }
+            }
+            else
+            {
+                result.flag = false;
+            }
+        }
+    });
+    return result;
+};
+
 function include(arr, obj) {
     return (arr.indexOf(obj) != -1);
 }
@@ -221,7 +250,29 @@ $(document).ready(function(){
             'data' : data.nodes,
             'check_callback': true
         },
-        'plugins' : [ "state", "unique" ]
+        'plugins' : [ "state", "unique", "types", "contextmenu" ],
+        'types' : {
+            'directory' : {
+                "icon": "{{ static_url('js/jstree/themes/custom/24/directory.png') }}"
+            },
+            'file' : {
+                "icon": "{{ static_url('js/jstree/themes/custom/24/file.png') }}"
+            }
+        },
+        'contextmenu': {
+            "items": customMenu
+        }
+    });
+
+    $('#project_tree').on('before_open.jstree', function(e, data) {
+        r = get_project_leaf(data.node.children);
+        console.log("r: ", r);
+        if (r.flag) {
+            r.nodes.forEach(function (value, index, array_notes) {
+                createProjectNode(value.parent, value.id, value.text, "last", value.type);
+                console.log('createProjectNode: ', value);
+            });
+        }
     });
 
     $('#call_tree').jstree({ 
@@ -319,6 +370,25 @@ $(document).ready(function(){
     //     console.log("test");
     // });
 });
+
+function customMenu(node) {
+    var items = {
+        'view_the_file' : {
+            "separator_before": false,
+            "separator_after": false,
+            "label" : "View The File",
+            "action" : function (obj) {
+                window.open('/project/view?q=' + node.id, '_blank');
+            }
+        },
+    }
+
+    if (node.type === 'directory') {
+        delete items.view_the_file;
+    }
+
+    return items;
+}
 
 // Helper method createNode(parent, id, text, position).
 // Dynamically adds nodes to the jsTree. Position can be 'first' or 'last'.

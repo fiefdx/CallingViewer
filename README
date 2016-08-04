@@ -1,5 +1,5 @@
 # need to install golang callgraph
-# need to install python-tornado, python-whoosh, python-jieba
+# need to install python-setuptools, python-tornado, python-whoosh, python-jieba, python-chardet
 
 Run CallingViewer:
 1. config configuration.yml file, specify main_path and go_path

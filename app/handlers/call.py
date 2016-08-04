@@ -19,6 +19,7 @@ from utils.finder import Finder
 from utils.search_whoosh import search_index_no_page
 from utils.index_whoosh import IX
 from utils.project import Project, Projects
+from utils.common_utils import sha1sum
 
 LOG = logging.getLogger(__name__)
 
@@ -39,19 +40,19 @@ class CallHandler(BaseHandler):
             project.parse_dict(data["projects"][0])
             dirs, files = project.listdir()
             if dirs != [] or files != []:
-                parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "tree"}
+                parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "directory"}
             else:
-                parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "leaf"}
+                parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
             for d in dirs:
                 nodes.append({"id": os.path.join(project.project_path, d["name"]), 
                               "parent": project.project_path, 
                               "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"), 
-                              "type": "leaf"})
+                              "type": "directory"})
             for f in files:
                 nodes.append({"id": os.path.join(project.project_path, f["name"]), 
                               "parent": project.project_path, 
                               "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"), 
-                              "type": "leaf"})
+                              "type": "file"})
             nodes.insert(0, parent)
             data["nodes"] = nodes
 
@@ -77,17 +78,20 @@ class CallHandler(BaseHandler):
             else:
                 r_filtered = r
         
+            parent_id = "%s%s%s" % (query, ID_SP, sha1sum(query.decode()))
             if r_filtered != []:
-                parent = {"id": query, "parent": "#", "text": query, "type": "tree"}
+                parent = {"id": parent_id, "parent": "#", "text": query, "type": "tree"}
             else:
-                parent = {"id": query, "parent": "#", "text": query, "type": "leaf"}
+                parent = {"id": parent_id, "parent": "#", "text": query, "type": "leaf"}
             for item in r_filtered:
                 if item[0] == query:
                     pass
                 else:
-                    tree.append({"id": "%s%s%s%s%s" % (query, ID_SP, item[0], ID_SP, item[1]), 
-                                 "parent": query, 
-                                 "text": item[0].replace("<", "&lt;").replace(">", "&gt;"), 
+                    child_id = "%s%s%s%s%s" % (query, ID_SP, item[0], ID_SP, item[1])
+                    child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
+                    tree.append({"id": child_id,
+                                 "parent": parent_id,
+                                 "text": item[0].replace("<", "&lt;").replace(">", "&gt;"),
                                  "type": "leaf"})
         
             tree.sort(lambda x,y : cmp(x['text'], y['text']))
@@ -131,7 +135,9 @@ class CallAjaxHandler(BaseHandler):
                     if item[0] == q:
                         pass
                     else:
-                        nodes.append({"id": "%s%s%s%s%s" % (q, ID_SP, item[0], ID_SP, item[1]), 
+                        child_id = "%s%s%s%s%s" % (q, ID_SP, item[0], ID_SP, item[1])
+                        child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
+                        nodes.append({"id": child_id, 
                                       "parent": q_id, 
                                       "text": item[0].replace("<", "&lt;").replace(">", "&gt;"), 
                                       "type": "leaf"})
@@ -147,16 +153,22 @@ class CallAjaxHandler(BaseHandler):
 
 class ViewHandler(BaseHandler):
     def get(self):
+        '''
+        q like "(*wps.cn/qing/qing/bll.FileSystem).formatSearchedFiles____
+                (*wps.cn/qing/qing/bll.FileSystem).Search____
+                /home/breeze/Work/QingSearch/src/wps.cn/qing/qing/bll/file.go:1943____
+                60eadd760c33a8ae4f8267e5514b342d2a479203"
+        '''
         q = self.get_argument("q", "").strip()
         d = self.get_argument("d", "false").strip() # definition
         d = True if d == "true" else False
         called_str = self.get_argument("called", "false").strip()
         called = True if called_str == "true" else False
         q_list = []
-        if ID_SP in q:
+        if ID_SP in q and len(q.split(ID_SP)) == 4:
             q_list = q.split(ID_SP)
         else:
-            q_list = ["", q, ""]
+            q_list = ["", q.split(ID_SP)[0], "", q.split(ID_SP)[-1]]
 
         LOG.info("q: %s, d: %s, called: %s", q, d, called)
 
@@ -165,7 +177,7 @@ class ViewHandler(BaseHandler):
         code = ""
         if d == False:
             if q != "":
-                q = q_list[-1]
+                q = q_list[-2]
 
             if q != "":
                 if ":" in q:
@@ -178,7 +190,7 @@ class ViewHandler(BaseHandler):
                         code = fp.read()
         elif d == True and "$" in q_list[1]:
             if ID_SP in q and ":" in q and called == False:
-                q = q_list[-1]
+                q = q_list[-2]
                 file_path, line_num = q.split(":")
                 if not os.path.isabs(file_path):
                     file_path = os.path.join(CONFIG["abs_path"], file_path)
