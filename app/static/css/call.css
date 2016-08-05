@@ -55,6 +55,7 @@
     overflow-y: scroll;
 }
 
+#form_delete,
 #form_add {
     margin-top: 150px;
     margin-bottom: 0px; 

@@ -11,6 +11,7 @@ import logging
 import datetime
 import time
 import json
+import shutil
 
 from config import CONFIG
 from utils.common_utils import sha1sum, listdir
@@ -90,6 +91,9 @@ class Projects(object):
                 Projects.PROJECTS[project.project_name] = project.to_dict()
                 with open(self.config_path, "wb") as fp:
                     fp.write(json.dumps(Projects.PROJECTS))
+            project_data_path = os.path.join(CONFIG["data_path"], "projects", project.project_name)
+            if not os.path.exists(project_data_path) or not os.path.isdir(project_data_path):
+                os.makedirs(project_data_path)
             result = True
         except Exception, e:
             LOG.exception(e)
@@ -115,6 +119,9 @@ class Projects(object):
                 del(Projects.PROJECTS[project_name])
                 with open(self.config_path, "wb") as fp:
                     fp.write(json.dumps(Projects.PROJECTS))
+            project_data_path = os.path.join(CONFIG["data_path"], "projects", project_name)
+            if os.path.exists(project_data_path) and os.path.isdir(project_data_path):
+                shutil.rmtree(project_data_path)
             result = True
         except Exception, e:
             LOG.exception(e)

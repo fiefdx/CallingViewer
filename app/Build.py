@@ -73,9 +73,11 @@ if __name__ == "__main__":
             LOG.info("delete: %s", ix_path)
         finder = Finder(CONFIG["data_path"], called = True)
         finder.build_finder()
+        ix = IX(init_object = True)
+        index_all_func(db = finder.db, ix = ix)
         finder = Finder(CONFIG["data_path"], called = False)
         finder.build_finder()
-        ix = IX(init_object = True)
+        # ix = IX(init_object = True)
         index_all_func(db = finder.db, ix = ix)
     else:
         LOG.error("Create data.callgraph failed!")

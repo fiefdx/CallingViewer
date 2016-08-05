@@ -97,6 +97,26 @@
         </div>
     </form>
 </div>
+<div id="delete_project_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
+    <form id="form_delete" class="form-horizontal">
+        {% raw xsrf_form_html() %}
+        <div id="dialog_delete" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="deleteModalLabel" class="modal-title">{{_("Warning")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <span class="col-xs-12">{{_("Are you sure to delete this project?")}}</span>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" type="button" data-dismiss="modal" aria-hidden="true">{{_("Cancel")}}</button>
+                    <button id="del_project_btn" class="btn btn-primary" type="button" data-dismiss="modal" aria-hidden="true">{{_("Delete")}}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
 {% end %}
 
 {% block javascript %}
@@ -104,16 +124,23 @@
 <script src="{{ static_url('js/typeahead.bundle.js') }}"></script>
 <script src="{{ static_url('js/handlebars-v1.3.0.js') }}"></script>
 <script type="text/javascript">
+var current_project = "";
+var $project_select = $('#project_select select');
+
 var $add_btn = $('#add_btn');
 var $del_btn = $('#del_btn');
 var $refresh_btn = $('#refresh_btn');
 var $reindex_btn = $('#reindex_btn');
 
 var $add_project_btn = $('#add_project_btn');
+var $del_project_btn = $('#del_project_btn');
 var $search_btn = $('#search_button');
 
+$project_select.change(changeProject);
 $add_btn.bind("click", showAddProject);
 $add_project_btn.bind("click", addProject);
+$del_btn.bind("click", showDelProject);
+$del_project_btn.bind("click", delProject);
 $search_btn.bind("click", search);
 
 function get_leaf(q) {
@@ -219,6 +246,7 @@ $(document).ready(function(){
 
     if (data.project) {
         $('#project_select select').val(data.project);
+        current_project = data.project;
     }
 
     var r_datas = new Bloodhound({
@@ -400,6 +428,36 @@ function createProjectNode(parent_node, new_node_id, new_node_text, position, ty
     $('#project_tree').jstree(true).create_node(parent_node, { "text":new_node_text, "id":new_node_id, "type": type }, position, null, false);
 }
 
+function changeProject() {
+    var selected_project = $('#project_select select').val();
+    if (current_project != selected_project) {
+        var ajax_url = "/select/project";
+        $.ajax({
+            type: "post",
+            async: false,
+            url: ajax_url,
+            data: {"project_name": selected_project},
+            success: function(data, textStatus) {
+                if(textStatus == "success") {
+                    $('#project_tree').jstree().delete_node($('#project_tree').jstree().get_json());
+                    if (data.nodes) {
+                        data.nodes.forEach(function (value, index, array_notes) {
+                            createProjectNode(value.parent, value.id, value.text, "last", value.type);
+                            console.log('createProjectNode: ', value);
+                        });
+                    }
+
+                    if (data.project) {
+                        $('#project_select select').val(data.project);
+                        current_project = data.project;
+                    }
+                }
+            }
+        });
+    }
+    $('#project_select select').blur();
+}
+
 function showAddProject() {
     $('#add_project_modal').modal('show');
 }
@@ -416,6 +474,14 @@ function addProject() {
                "main_path": $("input#main_path").val()},
         success: function(data, textStatus) {
             if(textStatus == "success") {
+                $('#project_tree').jstree().delete_node($('#project_tree').jstree().get_json());
+                if (data.nodes) {
+                    data.nodes.forEach(function (value, index, array_notes) {
+                        createProjectNode(value.parent, value.id, value.text, "last", value.type);
+                        console.log('createProjectNode: ', value);
+                    });
+                }
+                
                 if (data.projects) {
                     $('#project_select select').empty();
                     data.projects.forEach(function (value, index, array_notes) {
@@ -427,6 +493,47 @@ function addProject() {
 
                 if (data.project) {
                     $('#project_select select').val(data.project);
+                    current_project = data.project;
+                }
+            }
+        }
+    });
+}
+
+function showDelProject() {
+    $('#delete_project_modal').modal('show');
+}
+
+function delProject() {
+    var selected_project = $('#project_select select').val();
+    var ajax_url = "/delete/project";
+    $.ajax({
+        type: "post",
+        async: false,
+        url: ajax_url,
+        data: {"project_name": selected_project},
+        success: function(data, textStatus) {
+            if(textStatus == "success") {
+                $('#project_tree').jstree().delete_node($('#project_tree').jstree().get_json());
+                if (data.nodes) {
+                    data.nodes.forEach(function (value, index, array_notes) {
+                        createProjectNode(value.parent, value.id, value.text, "last", value.type);
+                        console.log('createProjectNode: ', value);
+                    });
+                }
+
+                if (data.projects) {
+                    $('#project_select select').empty();
+                    data.projects.forEach(function (value, index, array_notes) {
+                        $('#project_select select').append(
+                            '<option value="' + value.project_name + '"">' + value.project_name + '</option>'
+                        );
+                    });
+                }
+
+                if (data.project) {
+                    $('#project_select select').val(data.project);
+                    current_project = data.project;
                 }
             }
         }
