@@ -41,8 +41,8 @@ class FileStorage(object):
             cls.DB.sync()
 
 class FileStorage2(object):
-    def __init__(self, db_name):
-        self.db_path = os.path.join(CONFIG["data_path"], db_name)
+    def __init__(self, db_path, db_name):
+        self.db_path = os.path.join(db_path, db_name)
         self.DB = bsddb.btopen(self.db_path, "c")
 
     def get(self, key):

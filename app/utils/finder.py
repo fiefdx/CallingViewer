@@ -56,9 +56,9 @@ class Finder(object):
         self.data = {}
         self.called = called
         if self.called == True:
-            self.db = FS("table_called.db")
+            self.db = FS(data_path, "table_called.db")
         else:
-            self.db = FS("table_calling.db")
+            self.db = FS(data_path, "table_calling.db")
 
     def build_finder(self):
         fp = open(self.fpath, "rb")

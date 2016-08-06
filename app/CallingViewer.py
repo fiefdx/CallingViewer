@@ -21,10 +21,12 @@ import tornado.netutil
 import tornado.autoreload
 from tornado.options import define, options
 
+from config import CONFIG
 from app import Application
 from utils import common
 from utils.index_whoosh import IX
-from config import CONFIG
+from utils.project import Projects
+from utils.async_project_import import MultiProcessProjectImport as ProjectImport
 import logger
 
 cwd = os.path.split(os.path.realpath(__file__))[0]
@@ -55,8 +57,11 @@ if __name__ == "__main__":
                           console = True)
     http_server = tornado.httpserver.HTTPServer(Application(), no_keep_alive = False)
     common.Servers.HTTP_SERVER = http_server
-    _ = IX(init_object = False)
+    projects = Projects()
+    _ = IX(projects = [v for v in projects.all().itervalues()])
     common.Servers.IX_SERVER = IX
+    project_server = ProjectImport(CONFIG["process_num"])
+    common.Servers.PROJECT_SERVER = project_server
     if CONFIG["app_debug"] == True:
         http_server.listen(options.port)
         LOG.info("Listen: localhost:%s", options.port)

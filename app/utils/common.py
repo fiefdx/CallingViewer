@@ -19,14 +19,8 @@ MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 3
 
 class Servers(object):
     HTTP_SERVER = None
-    LISTENER = None
-    REGISTATOR = None
-    DB_SERVERS = {}
-    APP_CONFIG = None
-    VOLUMES = None
-    NAMESPACES = None
-    POSTER = None
     IX_SERVER = None
+    PROJECT_SERVER = None
 
 def is_browser(headers):
     result = False
@@ -92,29 +86,8 @@ def shutdown():
     if Servers.IX_SERVER:
         Servers.IX_SERVER.cls_close()
         LOG.info("Stop ix server!")
-    if Servers.LISTENER:
-        Servers.LISTENER.close_periodic()
-        Servers.LISTENER.stop()
-        LOG.info("Stop tcp listener!")
-    if Servers.REGISTATOR:
-        Servers.REGISTATOR.close()
-        LOG.info("Stop tcp registator!")
-    if Servers.DB_SERVERS:
-        for name_space in Servers.DB_SERVERS:
-            if Servers.DB_SERVERS[name_space]:
-                Servers.DB_SERVERS[name_space].close()
-                LOG.info("Stop db server(%s)!", name_space)
-    if Servers.APP_CONFIG:
-        Servers.APP_CONFIG.close()
-        LOG.info("Stop APP_CONFIG!")
-    if Servers.VOLUMES:
-        Servers.VOLUMES.close()
-        LOG.info("Stop VOLUMES!")
-    if Servers.NAMESPACES:
-        Servers.NAMESPACES.close()
-        LOG.info("Stop NAMESPACES!")
-    if Servers.POSTER:
-        Servers.POSTER.close()
+    if Servers.PROJECT_SERVER:
+        Servers.PROJECT_SERVER.close()
         LOG.info("Stop POSTER!")
     LOG.info("Will shutdown in %s seconds ...", MAX_WAIT_SECONDS_BEFORE_SHUTDOWN)
     io_loop = tornado.ioloop.IOLoop.instance()

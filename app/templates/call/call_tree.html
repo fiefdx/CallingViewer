@@ -24,8 +24,7 @@
         </div>
         <div id="project_opration" class="btn-group" role="group" aria-label="...">
             <button id="add_btn" type="button" class="btn btn-default">Add</button>
-            <button id="del_btn" type="button" class="btn btn-default">Del</button>
-            <button id="refresh_btn" type="button" class="btn btn-default">Refresh</button>
+            <button id="del_btn" type="button" class="btn btn-default">Delete</button>
             <button id="reindex_btn" type="button" class="btn btn-default">Reindex</button>
         </div>
     </div>
@@ -107,11 +106,67 @@
                     <h3 id="deleteModalLabel" class="modal-title">{{_("Warning")}}</h3>
                 </div>
                 <div class="modal-body">
-                    <span class="col-xs-12">{{_("Are you sure to delete this project?")}}</span>
+                    <span class="col-xs-12">{{_("Are you sure you want to delete this project?")}}</span>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-default" type="button" data-dismiss="modal" aria-hidden="true">{{_("Cancel")}}</button>
                     <button id="del_project_btn" class="btn btn-primary" type="button" data-dismiss="modal" aria-hidden="true">{{_("Delete")}}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="reindex_project_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="reindexProjectModalLabel" aria-hidden="true">
+    <form id="form_reindex" class="form-horizontal">
+        {% raw xsrf_form_html() %}
+        <div id="dialog_reindex" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="reindexModalLabel" class="modal-title">{{_("Warning")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <span class="col-xs-12">{{_("Are you sure you want to reindex this project?")}}</span>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" type="button" data-dismiss="modal" aria-hidden="true">{{_("Cancel")}}</button>
+                    <button id="reindex_project_btn" class="btn btn-primary" type="button" data-dismiss="modal" aria-hidden="true">{{_("Reindex")}}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="wait_add_project_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="waitProjectModalLabel" aria-hidden="true">
+    <form id="form_wait" class="form-horizontal">
+        {% raw xsrf_form_html() %}
+        <div id="dialog_wait" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="waitModalLabel" class="modal-title">{{_("Waiting")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <img id="wait_img" src="{{ static_url("img/Pulse.gif") }}">
+                    <span class="col-xs-12">{{_("Waiting for the project complete, it may take a few minutes.")}}</span>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="wait_reindex_project_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="waitProjectModalLabel" aria-hidden="true">
+    <form id="form_wait" class="form-horizontal">
+        {% raw xsrf_form_html() %}
+        <div id="dialog_wait" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="waitModalLabel" class="modal-title">{{_("Waiting")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <img id="wait_img" src="{{ static_url("img/Pulse.gif") }}">
+                    <span class="col-xs-12">{{_("Waiting for reindex the project complete, it may take a few minutes.")}}</span>
+                </div>
+                <div class="modal-footer">
                 </div>
             </div>
         </div>
@@ -129,11 +184,11 @@ var $project_select = $('#project_select select');
 
 var $add_btn = $('#add_btn');
 var $del_btn = $('#del_btn');
-var $refresh_btn = $('#refresh_btn');
 var $reindex_btn = $('#reindex_btn');
 
 var $add_project_btn = $('#add_project_btn');
 var $del_project_btn = $('#del_project_btn');
+var $reindex_project_btn = $('#reindex_project_btn');
 var $search_btn = $('#search_button');
 
 $project_select.change(changeProject);
@@ -141,6 +196,8 @@ $add_btn.bind("click", showAddProject);
 $add_project_btn.bind("click", addProject);
 $del_btn.bind("click", showDelProject);
 $del_project_btn.bind("click", delProject);
+$reindex_btn.bind("click", showReindexProject);
+$reindex_project_btn.bind("click", reindexProject);
 $search_btn.bind("click", search);
 
 function get_leaf(q) {
@@ -152,7 +209,8 @@ function get_leaf(q) {
         url: ajax_url,
         data: {"query": JSON.stringify(q), 
                "called": $("input[type=checkbox][name=called]").prop("checked"), 
-               "filter": $("#filter_input").val()},
+               "filter": $("#filter_input").val(),
+               "project_name": $('#project_select select').val()},
         success: function(data, textStatus){
             if(textStatus == "success"){
                 if(typeof data.nodes == "undefined")
@@ -216,7 +274,6 @@ window.onload = window.onresize = function(){
         $("#project_tree_view").height(window_height - project_view_hight_delta);
         $("#call_tree_view").height(window_height - project_view_hight_delta);
         $("#tree_view").width(window_width - project_view_width);
-        console.log("window width: " + window_width + "px");
     });
 }
 
@@ -254,7 +311,12 @@ $(document).ready(function(){
         queryTokenizer: Bloodhound.tokenizers.whitespace,
         limit: 10,
         remote: {
-            url: '/search?q=%QUERY&size=10',
+            url: '/search',
+            replace: function (url, query) {
+                url += '?q=' + encodeURIComponent($('#search_input').val());
+                url += '&size=10&p=' + encodeURIComponent($('#project_select select').val());
+                return url;
+            },
             filter: function(list) {
                 return $.map(list, function(complete_string) { return { string: complete_string }; });
             }
@@ -294,11 +356,9 @@ $(document).ready(function(){
 
     $('#project_tree').on('before_open.jstree', function(e, data) {
         r = get_project_leaf(data.node.children);
-        console.log("r: ", r);
         if (r.flag) {
             r.nodes.forEach(function (value, index, array_notes) {
                 createProjectNode(value.parent, value.id, value.text, "last", value.type);
-                console.log('createProjectNode: ', value);
             });
         }
     });
@@ -329,8 +389,7 @@ $(document).ready(function(){
                         "separator_after": false,
                         "label": "Go To Context",
                         "action": function (obj) {
-                            // console.log("Open: ", node.id);
-                            window.open('/view?q=' + node.id + '&d=false&called=' + $("input[type=checkbox][name=called]").prop("checked"), '_blank');
+                            window.open('/view?q=' + node.id + '&d=false&called=' + $("input[type=checkbox][name=called]").prop("checked") + '&p=' + $('#project_select select').val() , '_blank');
                         }
                     },
                     "Go To Definition": {
@@ -338,8 +397,7 @@ $(document).ready(function(){
                         "separator_after": false,
                         "label": "Go To Definition",
                         "action": function (obj) {
-                            // console.log("Open: ", node.id);
-                            window.open('/view?q=' + node.id + '&d=true&called=' + $("input[type=checkbox][name=called]").prop("checked"), '_blank');
+                            window.open('/view?q=' + node.id + '&d=true&called=' + $("input[type=checkbox][name=called]").prop("checked") + '&p=' + $('#project_select select').val(), '_blank');
                         }
                     }
                 };
@@ -348,26 +406,19 @@ $(document).ready(function(){
     });
 
     $('#call_tree').on('before_open.jstree', function(e, data) {
-        // console.log("open node: ", data.node.text);
         r = get_leaf(data.node.children);
-        // console.log("r: ", r);
         if (r.flag) {
             r.tree.forEach(function (value, index, array_notes) {
-                // console.log(index + ' ' + value);
                 $('#call_tree').jstree(true).set_type(value.id, "tree");
             });
             r.nodes.forEach(function (value, index, array_notes) {
-                // console.log(index + ' ' + value);
-                // createNode(value.parent, value.id, value.text, "last", value.type);
                 var path = $('#call_tree').jstree(true).get_path($('#call_tree').jstree(true).get_node(value.parent));
                 if (include(path, value.text)) {
                     $('#call_tree').jstree(true).set_type(value.parent, "loop");
                     $('#call_tree').jstree(true).set_type(value.id, "loop");
-                    console.log("loop: ", value.parent, " ", value.id);
                 } else {
                     createNode(value.parent, value.id, value.text, "last", value.type);
                 }
-                // console.log('path: ', path);
             });
             // $('#call_tree').jstree(true).refresh_node(data.node);
         }
@@ -378,25 +429,6 @@ $(document).ready(function(){
     $("#project_tree_view").height(window_height - project_view_hight_delta);
     $("#call_tree_view").height(window_height - project_view_hight_delta);
     $("#tree_view").width(window_width - project_view_width);
-    console.log("window width: " + window_width + "px");
-
-    // if (data.nodes) {
-    //     data.nodes.forEach(function (value, index, array_notes) {
-    //         createProjectNode(value.parent, value.id, value.text, "last", value.type);
-    //         console.log("add: parent: ", value.parent, " text: ", value.text, " id: ", value.id);
-    //     });
-    // }
-
-    // $('#call_tree').on('select_node.jstree', function(e, data) {
-    //     console.log("select node: ", data.node.text);
-    // });
-
-    // When the jsTree is ready, add two more records.
-    // $('#call_tree').on('ready.jstree', function (e, data) {
-    //     createNode("#ajson3", "ajson5", "Another Child", "last");
-    //     createNode("#ajson3", "ajson6", "Another One Child", "last");
-    //     console.log("test");
-    // });
 });
 
 function customMenu(node) {
@@ -406,7 +438,7 @@ function customMenu(node) {
             "separator_after": false,
             "label" : "View The File",
             "action" : function (obj) {
-                window.open('/project/view?q=' + node.id, '_blank');
+                window.open('/project/view?q=' + node.id + '&p=' + $('#project_select select').val(), '_blank');
             }
         },
     }
@@ -443,7 +475,6 @@ function changeProject() {
                     if (data.nodes) {
                         data.nodes.forEach(function (value, index, array_notes) {
                             createProjectNode(value.parent, value.id, value.text, "last", value.type);
-                            console.log('createProjectNode: ', value);
                         });
                     }
 
@@ -463,10 +494,11 @@ function showAddProject() {
 }
 
 function addProject() {
+    $('#wait_add_project_modal').modal('show');
     var ajax_url = "/add/project";
     $.ajax({
         type: "post",
-        async: false,
+        async: true,
         url: ajax_url,
         data: {"project_name": $("input#project_name").val(), 
                "project_path": $("input#project_path").val(), 
@@ -478,7 +510,6 @@ function addProject() {
                 if (data.nodes) {
                     data.nodes.forEach(function (value, index, array_notes) {
                         createProjectNode(value.parent, value.id, value.text, "last", value.type);
-                        console.log('createProjectNode: ', value);
                     });
                 }
                 
@@ -496,6 +527,7 @@ function addProject() {
                     current_project = data.project;
                 }
             }
+            $('#wait_add_project_modal').modal('hide');
         }
     });
 }
@@ -518,7 +550,6 @@ function delProject() {
                 if (data.nodes) {
                     data.nodes.forEach(function (value, index, array_notes) {
                         createProjectNode(value.parent, value.id, value.text, "last", value.type);
-                        console.log('createProjectNode: ', value);
                     });
                 }
 
@@ -540,6 +571,32 @@ function delProject() {
     });
 }
 
+function showReindexProject() {
+    $('#reindex_project_modal').modal('show');
+}
+
+function reindexProject() {
+    $('#wait_reindex_project_modal').modal('show');
+    var ajax_url = "/reindex/project";
+    $.ajax({
+        type: "post",
+        async: true,
+        url: ajax_url,
+        data: {"project_name": $('#project_select select').val()},
+        success: function(data, textStatus) {
+            if(textStatus == "success") {
+                $('#call_tree').jstree().delete_node($('#call_tree').jstree().get_json());
+
+                if (data.project) {
+                    $('#project_select select').val(data.project);
+                    current_project = data.project;
+                }
+            }
+            $('#wait_reindex_project_modal').modal('hide');
+        }
+    });
+}
+
 function search() {
     var ajax_url = "/";
     $.ajax({
@@ -548,10 +605,10 @@ function search() {
         url: ajax_url,
         data: {"query": $("input#search_input").val(), 
                "called": $("input[type=checkbox][name=called]").prop("checked"), 
-               "filter": $("input#filter_input").val()},
+               "filter": $("input#filter_input").val(),
+               "project_name": $('#project_select select').val()},
         success: function(data, textStatus) {
             if (textStatus == "success") {
-                console.log("search: ", data);
                 if (data.tree && data.query) {
                     $('#call_tree').jstree().delete_node($('#call_tree').jstree().get_json());
                     data.tree.forEach(function (value, index, array_notes) {

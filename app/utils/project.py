@@ -129,5 +129,7 @@ class Projects(object):
 
     def all(self):
         self.__init()
+        with open(self.config_path, "rb") as fp:
+            Projects.PROJECTS = json.loads(fp.read())
         return Projects.PROJECTS
 

@@ -48,10 +48,12 @@ if __name__ == "__main__":
         console = True
     )
     LOG.info("Start Build")
-    os.environ["GOPATH"] = "%s:%s" % (os.environ["GOPATH"], CONFIG["go_path"])
+    os.environ["GOPATH"] = "%s%s" % (os.environ["GOPATH"] + ":" if os.environ.has_key("GOPATH") else "", CONFIG["go_path"])
     start_time = time.time()
 
-    flag = common_utils.make_callgraph_data()
+    main_path = CONFIG["main_path"]
+    data_path = os.path.join(CONFIG["data_path"], "data.callgraph")
+    flag = common_utils.make_callgraph_data(main_path, data_path)
     if flag == True:
         db_path = os.path.join(CONFIG["data_path"], "table_calling.db")
         if os.path.exists(db_path) and os.path.isdir(db_path):

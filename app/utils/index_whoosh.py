@@ -33,62 +33,76 @@ LOG = logging.getLogger(__name__)
 
 
 class IX(object):
-    func = "func"
-    IX_NAMES = ["func", ]
+    IX_INDEXS = {}
 
-    ix_func = None
-    IX_INDEXS = ["ix_func", ]
-
-    def __init__(self, init_object = True):
-        for n, ix_index_attr in enumerate(IX.IX_INDEXS):
+    def __init__(self, projects = []):
+        for p in projects:
             try:
-                if hasattr(IX, ix_index_attr) and getattr(IX, ix_index_attr) == None:
-                    setattr(IX, 
-                            ix_index_attr, 
-                            get_whoosh_index(CONFIG["index_root_path"], 
-                                             getattr(IX, IX.IX_NAMES[n])))
-                    LOG.info("Init %s success", IX.IX_INDEXS[n])
+                if IX.IX_INDEXS.has_key(p["project_name"]) and IX.IX_INDEXS[p["project_name"]]:
+                    LOG.info("Inited %s success", p["project_name"])
                 else:
-                    LOG.info("Inited %s success", IX.IX_INDEXS[n])
+                    index_path = os.path.join(CONFIG["data_path"], "projects", p["project_name"], "index")
+                    IX.IX_INDEXS[p["project_name"]] = get_whoosh_index(index_path, "call")
+                    LOG.info("Init %s success", p["project_name"])
             except Exception, e:
-                LOG.info("Init %s failed", IX.IX_INDEXS[n])
+                LOG.info("Init %s failed", p["project_name"])
                 LOG.exception(e)
-        if init_object:
-            self.ix_func = get_whoosh_index(CONFIG["index_root_path"], IX.func)
-        else:
-            self.ix_func = None
-
-    @classmethod
-    def content(cls):
-        return "IX: ix_func: %s" % (cls.ix_func)
 
     @classmethod
     def cls_close(cls):
-        for n, ix_index_attr in enumerate(cls.IX_INDEXS):
+        for k in cls.IX_INDEXS:
             try:
-                if hasattr(cls, ix_index_attr) and getattr(cls, ix_index_attr):
-                    getattr(cls, ix_index_attr).close()
-                    setattr(cls, ix_index_attr, None)
-                LOG.info("Close %s success", ix_index_attr)
+                cls.IX_INDEXS[k].close()
+                cls.IX_INDEXS[k] = None
+                LOG.info("Close %s success", k)
             except Exception, e:
-                LOG.info("Close %s failed", ix_index_attr)
+                LOG.info("Close %s failed", k)
                 LOG.exception(e)
 
+    def get(self, project_name):
+        if IX.IX_INDEXS.has_key(project_name):
+            return IX.IX_INDEXS[project_name]
+        else:
+            return None
+
+    def add(self, project_name):
+        result = False
+        try:
+            index_path = os.path.join(CONFIG["data_path"], "projects", project_name, "index")
+            IX.IX_INDEXS[project_name] = get_whoosh_index(index_path, "call")
+            LOG.info("Init %s success", project_name)
+            result = True
+        except Exception, e:
+            LOG.exception(e)
+        return result
+
+    def delete(self, project_name):
+        result = False
+        try:
+            if IX.IX_INDEXS.has_key(project_name):
+                index_path = os.path.join(CONFIG["data_path"], "projects", project_name, "index")
+                if os.path.exists(index_path) and os.path.isdir(index_path):
+                    shutil.rmtree(index_path)
+                del(IX.IX_INDEXS[project_name])
+            result = True
+        except Exception, e:
+            LOG.exception(e)
+        return result
+
     def close(self):
-        for ix_index_attr in IX.IX_INDEXS:
+        for k in IX.IX_INDEXS:
             try:
-                if hasattr(self, ix_index_attr) and getattr(self, ix_index_attr):
-                    getattr(self, ix_index_attr).close()
-                LOG.info("Close %s success", ix_index_attr)
+                IX.IX_INDEXS[k].close()
+                LOG.info("Close %s success", k)
             except Exception, e:
-                LOG.info("Close %s failed", ix_index_attr)
+                LOG.info("Close %s failed", k)
                 LOG.exception(e)
 
 def get_whoosh_index(index_path, index_name = ""):
     result = None
     try:
         if index_name != "":
-            sch = {"func": Schema(doc_id = ID(unique = True, stored = True), 
+            sch = {"call": Schema(doc_id = ID(unique = True, stored = True), 
                                   name = TEXT(analyzer = analyzer, stored = True)),
                    }
             schema = sch[index_name]
@@ -116,29 +130,6 @@ def get_whoosh_index(index_path, index_name = ""):
         result = False
     return result
 
-def update_whoosh_index_doc(index, item, index_name, merge = False):
-    result = False
-    try:
-        if index != None and index != False:
-            try:
-                # writer = index.writer()
-                writer = AsyncWriter(index)
-                if index_name == "func":
-                    writer.update_document(doc_id = unicode(str(item.id)), 
-                                           name = item.name)
-                else:
-                    LOG.error("index_name error: in the update_whoosh_index_doc!")
-                writer.commit(merge = merge)
-                LOG.debug("Update index[%s] doc_id[%s]"%(index_name, item.id))
-                result = True
-            except Exception, e:
-                LOG.exception(e)
-                writer.cancel()
-                result = False
-    except Exception, e:
-        LOG.exception(e)
-    return result
-
 def update_whoosh_index_doc_num(index, item_iter, item_num, index_name, merge = False):
     result = False
     try:
@@ -149,7 +140,7 @@ def update_whoosh_index_doc_num(index, item_iter, item_num, index_name, merge = 
             try:
                 for item in item_iter:
                     n += 1
-                    if index_name == "func":
+                    if index_name == "call":
                         writer.update_document(doc_id = unicode(str(item.id)), 
                                                name = item.name)
                     else:
@@ -178,58 +169,6 @@ def update_whoosh_index_doc_num(index, item_iter, item_num, index_name, merge = 
         LOG.exception(e)
     return result
 
-def delete_whoosh_index_doc_num(index, item_iter, item_num, index_name, merge = False):
-    result = False
-    try:
-        if index != None and index != False:
-            n = 0
-            # writer = index.writer()
-            writer = AsyncWriter(index)
-            try:
-                for item in item_iter:
-                    n += 1
-                    if index_name == "func":
-                        writer.delete_by_term("doc_id", unicode(str(item.id)))
-                    else:
-                        LOG.error("index_name error: in the delete_whoosh_index_doc_num!")
-                    LOG.debug("Delete index[%s] doc_id[%s]"%(index_name, item.id))
-                    if n == item_num:
-                        writer.commit(merge = merge)
-                        LOG.info("Commit index[%s] success."%index_name)
-                        # writer = index.writer()
-                        writer = AsyncWriter(index)
-                        n = 0
-                if n % item_num != 0:
-                    writer.commit(merge = merge)
-                    LOG.info("Commit index[%s] success."%index_name)
-                result = True
-            except Exception, e:
-                LOG.exception(e)
-                writer.cancel()
-                result = False
-    except Exception, e:
-        LOG.exception(e)
-    return result
-
-def delete_whoosh_index_doc(index, doc_id, index_name, merge = False):
-    result = False
-    try:
-        if index != None and index != False:
-            try:
-                # writer = index.writer()
-                writer = AsyncWriter(index)
-                writer.delete_by_term("doc_id", doc_id)
-                writer.commit(merge = merge)
-                LOG.debug("Delete index[%s] doc_id[%s]"%(index_name, doc_id))
-                result = True
-            except Exception, e:
-                LOG.exception(e)
-                writer.cancel()
-                result = False
-    except Exception, e:
-        LOG.exception(e)
-    return result
-
 def delete_whoosh_index(index_path, index_name):
     result = False
     try:
@@ -254,16 +193,14 @@ def func_iter(db):
         func_item.generate_id()
         yield func_item
 
-def index_all_func(db, ix = None, merge = False):
+def index_all_func(db, ix, name = "call", bulk = 10000, merge = False):
     result = False
-    if ix == None:
-        ix = IX
     try:
-        flag = update_whoosh_index_doc_num(ix.ix_func, func_iter(db), 1000, "func", merge = False)
+        flag = update_whoosh_index_doc_num(ix, func_iter(db), bulk, name, merge = False)
         if flag:
-            LOG.debug("Index func success.")
+            LOG.debug("Index %s success", name)
         else:
-            LOG.debug("Index func failed.")
+            LOG.debug("Index %s failed", name)
         result = True
     except Exception, e:
         LOG.exception(e)

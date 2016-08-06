@@ -50,11 +50,9 @@ def md5twice(content):
     result = hashlib.md5(m).hexdigest().decode("utf-8")
     return result
 
-def make_callgraph_data():
+def make_callgraph_data(main_path, data_path):
     result = False
     cmd = r'callgraph -algo=cha -format="\"{{.Caller}}\" \"{{.Callee}}\" \"{{.Filename}}:{{.Line}}\"" %s > %s'
-    main_path = CONFIG["main_path"]
-    data_path = os.path.join(CONFIG["data_path"], "data.callgraph")
     LOG.debug("cmd: %s", cmd % (main_path, data_path))
     try:
         p = Popen(cmd % (main_path, data_path), shell = True)
@@ -79,6 +77,16 @@ def get_file_size(size):
         LOG.exception(e)
         result = "0 B"
     return result
+
+def escape_html(content):
+    # content = content.replace('\r', '')
+    # content = content.replace('\n', ' ')
+    content = content.replace('&','&amp;')
+    content = content.replace('<','&lt;')
+    content = content.replace('>','&gt;')
+    # content = content.replace(' ','&nbsp;')
+    content = content.replace('\"','&quot;')
+    return content
 
 def makekey(c):
     if isinstance(c, (int, long)):

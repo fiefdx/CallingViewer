@@ -19,11 +19,12 @@ from utils.finder import Finder
 from utils.search_whoosh import search_index_no_page
 from utils.index_whoosh import IX
 from utils.project import Project, Projects
-from utils.common_utils import sha1sum
+from utils.common_utils import sha1sum, escape_html
 
 LOG = logging.getLogger(__name__)
 
 ID_SP = "____"
+SEARCH_IX = IX()
 
 class CallHandler(BaseHandler):
     def get(self):
@@ -46,12 +47,12 @@ class CallHandler(BaseHandler):
             for d in dirs:
                 nodes.append({"id": os.path.join(project.project_path, d["name"]), 
                               "parent": project.project_path, 
-                              "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                              "text": escape_html(d["name"]), 
                               "type": "directory"})
             for f in files:
                 nodes.append({"id": os.path.join(project.project_path, f["name"]), 
                               "parent": project.project_path, 
-                              "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                              "text": escape_html(f["name"]), 
                               "type": "file"})
             nodes.insert(0, parent)
             data["nodes"] = nodes
@@ -59,13 +60,15 @@ class CallHandler(BaseHandler):
         self.render("call/call_tree.html", current_nav = "View", version = CONFIG["version"], result = json.dumps(data))
 
     def post(self):
+        project_name = self.get_argument("project_name", "").strip()
         query = self.get_argument("query", "").strip()
         called_str = self.get_argument("called", "false").strip()
         called = True if called_str == "true" else False
         filter_str = self.get_argument("filter", "").strip()
-        LOG.info("query: %s, called: %s, filter: %s", query, called, filter_str)
+        LOG.debug("query: %s, called: %s, filter: %s", query, called, filter_str)
 
-        finder = Finder(CONFIG["data_path"], called = called)
+        data_path = os.path.join(CONFIG["data_path"], "projects", project_name)
+        finder = Finder(data_path, called = called)
         r = finder.find(query)
 
         r_filtered = []
@@ -91,7 +94,7 @@ class CallHandler(BaseHandler):
                     child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
                     tree.append({"id": child_id,
                                  "parent": parent_id,
-                                 "text": item[0].replace("<", "&lt;").replace(">", "&gt;"),
+                                 "text": escape_html(item[0]),
                                  "type": "leaf"})
         
             tree.sort(lambda x,y : cmp(x['text'], y['text']))
@@ -106,14 +109,16 @@ class CallHandler(BaseHandler):
 
 class CallAjaxHandler(BaseHandler):
     def post(self):
+        project_name = self.get_argument("project_name", "").strip()
         query_str = self.get_argument("query", "[]").strip()
         query = json.loads(query_str)
         called_str = self.get_argument("called", "false").strip()
         called = True if called_str == "true" else False
         filter_str = self.get_argument("filter", "").strip()
-        LOG.info("query: %s, called: %s, filter: %s", query, called, filter_str)
+        LOG.debug("query: %s, called: %s, filter: %s", query, called, filter_str)
 
-        finder = Finder(CONFIG["data_path"], called = called)
+        data_path = os.path.join(CONFIG["data_path"], "projects", project_name)
+        finder = Finder(data_path, called = called)
         nodes = []
         tree = []
         for q_id in query:
@@ -139,7 +144,7 @@ class CallAjaxHandler(BaseHandler):
                         child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
                         nodes.append({"id": child_id, 
                                       "parent": q_id, 
-                                      "text": item[0].replace("<", "&lt;").replace(">", "&gt;"), 
+                                      "text": escape_html(item[0]), 
                                       "type": "leaf"})
         
         nodes.sort(lambda x,y : cmp(x['text'], y['text']))
@@ -160,6 +165,7 @@ class ViewHandler(BaseHandler):
                 60eadd760c33a8ae4f8267e5514b342d2a479203"
         '''
         q = self.get_argument("q", "").strip()
+        project_name = self.get_argument("p", "").strip()
         d = self.get_argument("d", "false").strip() # definition
         d = True if d == "true" else False
         called_str = self.get_argument("called", "false").strip()
@@ -170,9 +176,11 @@ class ViewHandler(BaseHandler):
         else:
             q_list = ["", q.split(ID_SP)[0], "", q.split(ID_SP)[-1]]
 
-        LOG.info("q: %s, d: %s, called: %s", q, d, called)
+        LOG.debug("q: %s, d: %s, called: %s", q, d, called)
 
         file_path, line_num = "Can't open the root element's file!", 0
+
+        data_path = os.path.join(CONFIG["data_path"], "projects", project_name)
 
         code = ""
         if d == False:
@@ -200,7 +208,7 @@ class ViewHandler(BaseHandler):
             else:
                 r = []
                 q = q_list[1]
-                finder = Finder(CONFIG["data_path"], called = True)
+                finder = Finder(data_path, called = True)
                 r = finder.find(q)
                 LOG.debug("r: %s", r)
                 if r != [] and r != None and r != False:
@@ -212,7 +220,7 @@ class ViewHandler(BaseHandler):
                             code = fp.read()
         else:
             if q != "":
-                finder = Finder(CONFIG["data_path"], called = False)
+                finder = Finder(data_path, called = False)
                 r = []
                 if ID_SP in q:
                     q = q_list[1]
@@ -236,7 +244,8 @@ class ViewHandler(BaseHandler):
                                 n += 1
 
         data = {}
-        data["code"] = code
+        data["ext"] = os.path.splitext(file_path)[-1].lower()
+        data["code"] = escape_html(code)
         data["line"] = int(line_num)
         data["path"] = file_path
         file_name = "%s:%s" % (os.path.split(file_path)[-1], line_num)
@@ -246,9 +255,10 @@ class SearchAjaxHandler(BaseHandler):
     @gen.coroutine
     def get(self):
         query = self.get_argument("q", "").strip()
+        project_name = self.get_argument("p", "").strip()
         size = self.get_argument("size", "10").strip()
         size = int(size)
-        results = yield search_index_no_page(IX.ix_func, query + "*", "func", limits = size)
+        results = yield search_index_no_page(SEARCH_IX.get(project_name), query + "*", "call", limits = size)
         LOG.debug("result_len: %s", len(results))
         result = []
         for hit in results:

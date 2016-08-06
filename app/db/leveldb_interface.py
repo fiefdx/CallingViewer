@@ -44,8 +44,8 @@ class FileStorage(object):
         return cls.DB.GetStats()
 
 class FileStorage2(object):
-    def __init__(self, db_name):
-        self.db_path = os.path.join(CONFIG["data_path"], db_name)
+    def __init__(self, db_path, db_name):
+        self.db_path = os.path.join(db_path, db_name)
         self.DB = leveldb.LevelDB(self.db_path, block_size = 1024 * 1024 * 1024)
 
     def get(self, key):

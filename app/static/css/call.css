@@ -25,7 +25,8 @@
 }
 
 #project_opration {
-    margin-left: 0px;
+    /*margin-left: 0px;*/
+    padding-left: 30px;
 }
 
 #tree_view {
@@ -42,6 +43,11 @@
     padding-right: 0px;
 }
 
+#search_input {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
 #filter_input_view {
     margin-top: 5px;
 }
@@ -55,6 +61,13 @@
     overflow-y: scroll;
 }
 
+#wait_img {
+    opacity: 0.2;
+    margin-bottom: 20px;
+}
+
+#form_reindex,
+#form_wait,
 #form_delete,
 #form_add {
     margin-top: 150px;

@@ -50,7 +50,7 @@ def search_index_page(index, query, index_name, page, limits, filter = None):
 def search_index_no_page(index, query, index_name, limits = None, filter = None):
     result = []
     try:
-        search_field = {"func": ["name"]}
+        search_field = {"call": ["name"]}
         searcher = index.searcher()
         mparser = MultifieldParser(search_field[index_name], schema = index.schema)
         q = mparser.parse(query)

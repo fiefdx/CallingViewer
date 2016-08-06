@@ -65,8 +65,51 @@ if (data.path) {
 }
 
 if (data.code) {
+    code_type = "";
+    if (data.ext && data.ext != '') {
+        switch (data.ext) {
+            case ".go":
+                code_type = "golang";
+                break;
+            case ".py":
+                code_type = "python";
+                break;
+            case ".sh":
+                code_type = "bash";
+                break;
+            case ".c":
+                code_type = "c";
+                break;
+            case ".cc":
+                code_type = "c++";
+                break;
+            case ".html":
+                code_type = "html";
+                break;
+            case ".css":
+                code_type = "css";
+                break;
+            case ".js":
+                code_type = "javascript";
+                break;
+            case ".xml":
+                code_type = "xml";
+                break;
+            case ".json":
+                code_type = "json";
+                break;
+            case ".sql":
+                code_type = "sql";
+                break;
+            case ".php":
+                code_type = "php";
+                break;
+            default:
+                code_type = "";
+        }
+    }
     $("#code_div").append(
-        '<pre><code class="golang">' + data.code + '</code></pre>'
+        '<pre><code class="' + code_type + '">' + data.code + '</code></pre>'
     );
 }
 
@@ -74,22 +117,9 @@ if (data.line) {
     line = data.line;
 }
 
-// window.onload = window.onresize = function(){
-//     $(document).ready(function(){
-//         var window_height = $(window).height();
-//         var window_width = $(window).width();
-//         $("#code_div").height(window_height - 84);
-//         console.log("window width: " + window_width + "px");
-//     });
-// }
-
 $(document).ready(function(){
     hljs.initHighlightingOnLoad();
     hljs.initLineNumbersOnLoad(line, 75);
-    // var window_height = $(window).height();
-    // var window_width = $(window).width();
-    // $("#code_div").height(window_height - 84);
-    // console.log("window width: " + window_width + "px");
 });
 </script>
 {% end %}

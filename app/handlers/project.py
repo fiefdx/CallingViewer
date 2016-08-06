@@ -19,25 +19,28 @@ from base import BaseHandler, BaseSocketHandler
 from utils.finder import Finder
 from utils.index_whoosh import IX
 from utils.project import Project, Projects
+from utils.async_project_import import MultiProcessProjectImport as ProjectImport
+from utils.common_utils import sha1sum, escape_html
 
 LOG = logging.getLogger(__name__)
 
+SEARCH_IX = IX()
 
 class ProjectAjaxAddHandler(BaseHandler):
+    @gen.coroutine
     def post(self):
         project_name = self.get_argument("project_name", "").strip()
         project_path = self.get_argument("project_path", "").strip()
         go_path = self.get_argument("go_path", "").strip()
         main_path = self.get_argument("main_path", "").strip()
 
-        LOG.info("add project: project_name %s, project_path: %s, go_path: %s, main_path: %s", project_name, project_path, go_path, main_path)
+        LOG.debug("add project: project_name %s, project_path: %s, go_path: %s, main_path: %s", project_name, project_path, go_path, main_path)
 
         data = {}
         data["nodes"] = []
         data["tree"] = []
         data["project"] = ""
         projects = Projects()
-        flag = False
         if project_name != "" and os.path.exists(project_path) and os.path.isdir(project_path) and os.path.exists(main_path) and os.path.isfile(main_path):
             project = Project()
             project.go_path = go_path
@@ -49,27 +52,37 @@ class ProjectAjaxAddHandler(BaseHandler):
             data["projects"] = [v for v in projects.all().itervalues()]
             data["projects"].sort(lambda x,y : cmp(x['project_name'], y['project_name']))
             if flag:
+                project_import = ProjectImport(CONFIG["process_num"])
                 data["project"] = project_name
                 nodes = []
                 project = Project()
                 project.parse_dict(projects.get(project_name))
-                dirs, files = project.listdir()
-                if dirs != [] or files != []:
-                    parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "directory"}
-                else:
-                    parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
-                for d in dirs:
-                    nodes.append({"id": os.path.join(project.project_path, d["name"]), 
-                                  "parent": project.project_path, 
-                                  "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"), 
-                                  "type": "directory"})
-                for f in files:
-                    nodes.append({"id": os.path.join(project.project_path, f["name"]), 
-                                  "parent": project.project_path, 
-                                  "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"), 
-                                  "type": "file"})
-                nodes.insert(0, parent)
-                data["nodes"] = nodes
+                project.hash()
+                SEARCH_IX.delete(project_name)
+                flag = SEARCH_IX.add(project_name)
+                if flag:
+                    flag = yield project_import.import_project(project)
+                    if flag:
+                        LOG.info("Add Project[%s] Success", project_name)
+                    else:
+                        LOG.info("Add Project[%s] Failed", project_name)
+                    dirs, files = project.listdir()
+                    if dirs != [] or files != []:
+                        parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "directory"}
+                    else:
+                        parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
+                    for d in dirs:
+                        nodes.append({"id": os.path.join(project.project_path, d["name"]), 
+                                      "parent": project.project_path, 
+                                      "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                                      "type": "directory"})
+                    for f in files:
+                        nodes.append({"id": os.path.join(project.project_path, f["name"]), 
+                                      "parent": project.project_path, 
+                                      "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                                      "type": "file"})
+                    nodes.insert(0, parent)
+                    data["nodes"] = nodes
             elif len(data["projects"]) > 0:
                 nodes = []
                 data["project"] = data["projects"][0]["project_name"]
@@ -95,13 +108,39 @@ class ProjectAjaxAddHandler(BaseHandler):
 
         self.write(data)
 
+class ProjectAjaxReindexHandler(BaseHandler):
+    @gen.coroutine
+    def post(self):
+        project_name = self.get_argument("project_name", "").strip()
+
+        LOG.debug("reindex project: project_name %s", project_name)
+
+        data = {}
+        data["project"] = project_name
+        projects = Projects()
+        if project_name != "":
+            project_import = ProjectImport(CONFIG["process_num"])
+            project = Project()
+            project.parse_dict(projects.get(project_name))
+            project.hash()
+            SEARCH_IX.delete(project_name)
+            flag = SEARCH_IX.add(project_name)
+            if flag:
+                flag = yield project_import.import_project(project)
+                if flag:
+                    LOG.info("Reindex Project[%s] Success", project_name)
+                else:
+                    LOG.info("Reindex Project[%s] Failed", project_name)
+
+        self.write(data)
+
 class ProjectAjaxLeafHandler(BaseHandler):
     def post(self):
         query_str = self.get_argument("query", "[]").strip()
         query = json.loads(query_str)
         project_name = self.get_argument("project_name", "").strip()
 
-        LOG.info("query: %s, project_name: %s", query, project_name)
+        LOG.debug("query: %s, project_name: %s", query, project_name)
 
         nodes = []
         tree = []
@@ -132,7 +171,7 @@ class ProjectAjaxLeafHandler(BaseHandler):
 class ProjectAjaxSelectHandler(BaseHandler):
     def post(self):
         project_name = self.get_argument("project_name", "").strip()
-        LOG.info("project_name: %s", project_name)
+        LOG.debug("project_name: %s", project_name)
 
         projects = Projects()
         data = {}
@@ -164,7 +203,7 @@ class ProjectAjaxSelectHandler(BaseHandler):
 class ProjectAjaxDeleteHandler(BaseHandler):
     def post(self):
         project_name = self.get_argument("project_name", "").strip()
-        LOG.info("project_name: %s", project_name)
+        LOG.debug("project_name: %s", project_name)
 
         projects = Projects()
         data = {}
@@ -202,7 +241,7 @@ class ViewHandler(BaseHandler):
     def get(self):
         q = self.get_argument("q", "").strip()
 
-        LOG.info("q: %s", q)
+        LOG.debug("q: %s", q)
 
         file_path, line_num = "Can't read this file!", 0
 
@@ -218,24 +257,23 @@ class ViewHandler(BaseHandler):
         data = {}
         data["code"] = ""
         encoding = chardet.detect(code)
-        LOG.info("code encoding: %s", encoding)
+        LOG.debug("code encoding: %s", encoding)
         try:
             data["code"] = code.decode()
         except Exception, e:
-            LOG.exception(e)
             try:
                 data["code"] = code.decode("utf-8")
             except Exception, e:
-                LOG.exception(e)
                 try:
                     data["code"] = code.decode("gbk")
                 except Exception, e:
-                    LOG.exception(e)
                     try:
                         data["code"] = code.decode(encoding["encoding"])
                     except Exception, e:
                         LOG.exception(e)
                         file_path = "Can't read this file!"
+        data["ext"] = os.path.splitext(file_path)[-1].lower()
+        data["code"] = escape_html(data["code"])
         data["line"] = int(line_num)
         data["path"] = file_path
         file_name = "%s:%s" % (os.path.split(file_path)[-1], line_num)

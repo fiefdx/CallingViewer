@@ -33,10 +33,14 @@ try:
     datapath = CONFIG["data_path"]
     if not CONFIG.has_key("db_type"):
         CONFIG["db_type"] = "leveldb"
+    if not CONFIG.has_key("process_num"):
+        CONFIG["process_num"] = 1
     if not CONFIG.has_key("abs_path"):
         CONFIG["abs_path"] = ""
-    if not CONFIG.has_key("index_root_path"):
-        CONFIG["index_root_path"] = os.path.join(CONFIG["data_path"], "index")
+    if not CONFIG.has_key("max_recursion"):
+        CONFIG["max_recursion"] = 30
+    if not CONFIG.has_key("go_path"):
+        CONFIG["go_path"] = ""
     with open(os.path.join(cwd, "Version"), "rb") as version_fp:
         CONFIG["version"] = version_fp.read().strip()
 

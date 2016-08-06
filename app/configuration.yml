@@ -10,17 +10,9 @@ log_level: INFO
 server_host: 127.0.0.1
 server_port: 9009
 
-max_recursion: 30
-
-abs_path: /home/breeze/Work/QingSearch/src/wps.cn/qing
-
-main_path: /home/breeze/Work/QingSearch/src/wps.cn/qing/cmd/qing/main.go
-
-go_path: /home/breeze/Work/QingSearch:/home/breeze/Work/QingSearch/src/wps.cn/lib/Godeps/_workspace
-
-# db_type: bsddb
+db_type: bsddb
 
 # DATA_PATH
 # a path for all data
-# data_path: /home/breeze/Work/TestFS/Data/Master
+# data_path: /home/breeze/Develop/CallingViewer/DATA
 
