@@ -1,8 +1,0 @@
-# need to install golang callgraph
-# need to install python-setuptools, python-tornado, python-whoosh, python-jieba, python-chardet
-
-Run CallingViewer:
-1. config configuration.yml file, specify main_path and go_path
-2. python Build.py # build DATA/table_*, DATA/data.callgraph and DATA/index 
-3. python CallingViewer.py # start CallingViewer service
-4. open browser with http://localhost:9000
