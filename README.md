@@ -32,7 +32,7 @@ Run CallingViewer
 
    _ex. the main window like below_
 
-   [[https://github.com/fiefdx/CallingViewer/blob/master/doc/main_window.png|alt=main_window]]
+   ![Alt text](/doc/main_window.png?raw=true "main_window")
 
 4. add a golang project, click the Add button at bottom-left, fill the form then click Add
  * Project Name: is the name will display at the top-left select box
