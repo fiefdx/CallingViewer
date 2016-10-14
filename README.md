@@ -42,26 +42,26 @@ Run CallingViewer
 
    _ex. github.com/flike/idgo fill the form like below_
 
-   [[https://github.com/fiefdx/CallingViewer/blob/master/doc/add_project.png|alt=add_project]]
+   ![Alt text](/doc/add_project.png?raw=true "add_project")
 
 5. after add a golang project, you can see the project's tree view left, right click the node, you can get context menu, left click the menu you can open a new tab with the source code
 
    _ex. project's tree view like below_
 
-   [[https://github.com/fiefdx/CallingViewer/blob/master/doc/project_tree_view_with_context_menu.png|alt=project_tree_view_with_context_menu]]
+   ![Alt text](/doc/project_tree_view_with_context_menu.png?raw=true "project_tree_view_with_context_menu")
 
    _ex. open source code from project's tree view like below_
 
-   [[https://github.com/fiefdx/CallingViewer/blob/master/doc/open_source_code_by_project_context_menu.png|alt=open_source_code_by_project_context_menu]]
+   ![Alt text](/doc/open_source_code_by_project_context_menu.png?raw=true "open_source_code_by_project_context_menu")
 
 6. type method's name into search input, click Search button, you can get the calling view, if you want the called view, you can select the "Called" option, then click Search button, right click the node, you can get context menu, left click the menu you can open a new tab with the source code where the function be calling/called
 
    _ex. calling view like below_
 
-   [[https://github.com/fiefdx/CallingViewer/blob/master/doc/calling_tree_view_with_context_menu.png|alt=calling_tree_view_with_context_menu]]
+   ![Alt text](/doc/calling_tree_view_with_context_menu.png?raw=true "calling_tree_view_with_context_menu")
 
    _ex. open source code from calling view like below_
 
-   [[https://github.com/fiefdx/CallingViewer/blob/master/doc/open_source_code_by_tree_context_menu.png|alt=open_source_code_by_tree_context_menu]]
+   ![Alt text](/doc/open_source_code_by_tree_context_menu.png?raw=true "open_source_code_by_tree_context_menu")
 
 7. you can type keyword in the "Filter" input, so, it will just display the result contained the keyword
