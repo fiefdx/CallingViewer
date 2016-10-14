@@ -5,7 +5,7 @@ app_debug: true
 # LOG_LEVEL
 # a value of (NOSET, DEBUG, INFO, WARNING, ERROR, CRITICAL)
 # default NOSET
-log_level: INFO
+log_level: DEBUG
 
 server_host: 127.0.0.1
 server_port: 9009

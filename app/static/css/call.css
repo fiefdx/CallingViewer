@@ -26,7 +26,7 @@
 
 #project_opration {
     /*margin-left: 0px;*/
-    padding-left: 30px;
+    padding-left: 0px;
 }
 
 #tree_view {
@@ -69,6 +69,7 @@
 #form_reindex,
 #form_wait,
 #form_delete,
+#form_edit,
 #form_add {
     margin-top: 150px;
     margin-bottom: 0px; 

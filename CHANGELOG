@@ -2,3 +2,4 @@
 0.0.2: support recursion relation
 0.0.3: support autocomplete
 0.0.4: improve Build.py, no need to run callgraph manually anymore
+0.0.5: add edit project's profile function

@@ -29,6 +29,7 @@ class Application(tornado.web.Application):
                     (r"/search", call.SearchAjaxHandler),
                     (r"/view", call.ViewHandler),
                     (r"/add/project", project.ProjectAjaxAddHandler),
+                    (r"/edit/project", project.ProjectAjaxEditHandler),
                     (r"/reindex/project", project.ProjectAjaxReindexHandler),
                     (r"/select/project", project.ProjectAjaxSelectHandler),
                     (r"/delete/project", project.ProjectAjaxDeleteHandler),

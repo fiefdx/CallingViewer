@@ -58,6 +58,9 @@ class ProjectAjaxAddHandler(BaseHandler):
                 project = Project()
                 project.parse_dict(projects.get(project_name))
                 project.hash()
+                data["project_path"] = project.project_path
+                data["main_path"] = project.main_path
+                data["go_path"] = project.go_path
                 SEARCH_IX.delete(project_name)
                 flag = SEARCH_IX.add(project_name)
                 if flag:
@@ -72,14 +75,14 @@ class ProjectAjaxAddHandler(BaseHandler):
                     else:
                         parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
                     for d in dirs:
-                        nodes.append({"id": os.path.join(project.project_path, d["name"]), 
-                                      "parent": project.project_path, 
-                                      "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                        nodes.append({"id": os.path.join(project.project_path, d["name"]),
+                                      "parent": project.project_path,
+                                      "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"),
                                       "type": "directory"})
                     for f in files:
-                        nodes.append({"id": os.path.join(project.project_path, f["name"]), 
-                                      "parent": project.project_path, 
-                                      "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                        nodes.append({"id": os.path.join(project.project_path, f["name"]),
+                                      "parent": project.project_path,
+                                      "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"),
                                       "type": "file"})
                     nodes.insert(0, parent)
                     data["nodes"] = nodes
@@ -88,23 +91,53 @@ class ProjectAjaxAddHandler(BaseHandler):
                 data["project"] = data["projects"][0]["project_name"]
                 project = Project()
                 project.parse_dict(data["projects"][0])
+                data["project_path"] = project.project_path
+                data["main_path"] = project.main_path
+                data["go_path"] = project.go_path
                 dirs, files = project.listdir()
                 if dirs != [] or files != []:
                     parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "directory"}
                 else:
                     parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
                 for d in dirs:
-                    nodes.append({"id": os.path.join(project.project_path, d["name"]), 
-                                  "parent": project.project_path, 
-                                  "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                    nodes.append({"id": os.path.join(project.project_path, d["name"]),
+                                  "parent": project.project_path,
+                                  "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"),
                                   "type": "directory"})
                 for f in files:
-                    nodes.append({"id": os.path.join(project.project_path, f["name"]), 
-                                  "parent": project.project_path, 
-                                  "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                    nodes.append({"id": os.path.join(project.project_path, f["name"]),
+                                  "parent": project.project_path,
+                                  "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"),
                                   "type": "file"})
                 nodes.insert(0, parent)
                 data["nodes"] = nodes
+        else:
+            data["projects"] = [v for v in projects.all().itervalues()]
+            data["projects"].sort(lambda x,y : cmp(x['project_name'], y['project_name']))
+            nodes = []
+            data["project"] = data["projects"][0]["project_name"]
+            project = Project()
+            project.parse_dict(data["projects"][0])
+            data["project_path"] = project.project_path
+            data["main_path"] = project.main_path
+            data["go_path"] = project.go_path
+            dirs, files = project.listdir()
+            if dirs != [] or files != []:
+                parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "directory"}
+            else:
+                parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
+            for d in dirs:
+                nodes.append({"id": os.path.join(project.project_path, d["name"]),
+                              "parent": project.project_path,
+                              "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"),
+                              "type": "directory"})
+            for f in files:
+                nodes.append({"id": os.path.join(project.project_path, f["name"]),
+                              "parent": project.project_path,
+                              "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"),
+                              "type": "file"})
+            nodes.insert(0, parent)
+            data["nodes"] = nodes
 
         self.write(data)
 
@@ -153,14 +186,14 @@ class ProjectAjaxLeafHandler(BaseHandler):
                 if dirs != [] or files != []:
                     tree.append({"id": q_id})
                 for d in dirs:
-                    nodes.append({"id": os.path.join(q_id, d["name"]), 
+                    nodes.append({"id": os.path.join(q_id, d["name"]),
                                   "parent": q_id, 
-                                  "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                                  "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"),
                                   "type": "directory"})
                 for f in files:
-                    nodes.append({"id": os.path.join(q_id, f["name"]), 
-                                  "parent": q_id, 
-                                  "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                    nodes.append({"id": os.path.join(q_id, f["name"]),
+                                  "parent": q_id,
+                                  "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"),
                                   "type": "file"})
 
         data = {}
@@ -181,23 +214,141 @@ class ProjectAjaxSelectHandler(BaseHandler):
         nodes = []
         project = Project()
         project.parse_dict(projects.get(project_name))
+        data["project_path"] = project.project_path
+        data["main_path"] = project.main_path
+        data["go_path"] = project.go_path
         dirs, files = project.listdir()
         if dirs != [] or files != []:
             parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "directory"}
         else:
             parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
         for d in dirs:
-            nodes.append({"id": os.path.join(project.project_path, d["name"]), 
-                          "parent": project.project_path, 
-                          "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+            nodes.append({"id": os.path.join(project.project_path, d["name"]),
+                          "parent": project.project_path,
+                          "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"),
                           "type": "directory"})
         for f in files:
-            nodes.append({"id": os.path.join(project.project_path, f["name"]), 
-                          "parent": project.project_path, 
-                          "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+            nodes.append({"id": os.path.join(project.project_path, f["name"]),
+                          "parent": project.project_path,
+                          "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"),
                           "type": "file"})
         nodes.insert(0, parent)
         data["nodes"] = nodes
+        self.write(data)
+
+class ProjectAjaxEditHandler(BaseHandler):
+    @gen.coroutine
+    def post(self):
+        project_name = self.get_argument("project_name", "").strip()
+        project_path = self.get_argument("project_path", "").strip()
+        go_path = self.get_argument("go_path", "").strip()
+        main_path = self.get_argument("main_path", "").strip()
+
+        LOG.debug("edit project: project_name %s, project_path: %s, go_path: %s, main_path: %s", project_name, project_path, go_path, main_path)
+
+        data = {}
+        data["nodes"] = []
+        data["tree"] = []
+        data["project"] = ""
+        projects = Projects()
+        if project_name != "" and os.path.exists(project_path) and os.path.isdir(project_path) and os.path.exists(main_path) and os.path.isfile(main_path):
+            project = Project()
+            project.go_path = go_path
+            project.main_path = main_path
+            project.project_path = project_path
+            project.project_name = project_name
+            project.hash()
+            flag = projects.edit(project)
+            data["projects"] = [v for v in projects.all().itervalues()]
+            data["projects"].sort(lambda x,y : cmp(x['project_name'], y['project_name']))
+            if flag:
+                project_import = ProjectImport(CONFIG["process_num"])
+                data["project"] = project_name
+                nodes = []
+                project = Project()
+                project.parse_dict(projects.get(project_name))
+                project.hash()
+                data["project_path"] = project.project_path
+                data["main_path"] = project.main_path
+                data["go_path"] = project.go_path
+                SEARCH_IX.delete(project_name)
+                flag = SEARCH_IX.add(project_name)
+                if flag:
+                    flag = yield project_import.import_project(project)
+                    if flag:
+                        LOG.info("Edit Project[%s] Success", project_name)
+                    else:
+                        LOG.info("Edit Project[%s] Failed", project_name)
+                    dirs, files = project.listdir()
+                    if dirs != [] or files != []:
+                        parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "directory"}
+                    else:
+                        parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
+                    for d in dirs:
+                        nodes.append({"id": os.path.join(project.project_path, d["name"]),
+                                      "parent": project.project_path,
+                                      "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"),
+                                      "type": "directory"})
+                    for f in files:
+                        nodes.append({"id": os.path.join(project.project_path, f["name"]),
+                                      "parent": project.project_path,
+                                      "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"),
+                                      "type": "file"})
+                    nodes.insert(0, parent)
+                    data["nodes"] = nodes
+            elif len(data["projects"]) > 0:
+                nodes = []
+                data["project"] = data["projects"][0]["project_name"]
+                project = Project()
+                project.parse_dict(data["projects"][0])
+                data["project_path"] = project.project_path
+                data["main_path"] = project.main_path
+                data["go_path"] = project.go_path
+                dirs, files = project.listdir()
+                if dirs != [] or files != []:
+                    parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "directory"}
+                else:
+                    parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
+                for d in dirs:
+                    nodes.append({"id": os.path.join(project.project_path, d["name"]),
+                                  "parent": project.project_path,
+                                  "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"),
+                                  "type": "directory"})
+                for f in files:
+                    nodes.append({"id": os.path.join(project.project_path, f["name"]),
+                                  "parent": project.project_path,
+                                  "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"),
+                                  "type": "file"})
+                nodes.insert(0, parent)
+                data["nodes"] = nodes
+        else:
+            data["projects"] = [v for v in projects.all().itervalues()]
+            data["projects"].sort(lambda x,y : cmp(x['project_name'], y['project_name']))
+            nodes = []
+            data["project"] = data["projects"][0]["project_name"]
+            project = Project()
+            project.parse_dict(data["projects"][0])
+            data["project_path"] = project.project_path
+            data["main_path"] = project.main_path
+            data["go_path"] = project.go_path
+            dirs, files = project.listdir()
+            if dirs != [] or files != []:
+                parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "directory"}
+            else:
+                parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
+            for d in dirs:
+                nodes.append({"id": os.path.join(project.project_path, d["name"]),
+                              "parent": project.project_path,
+                              "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"),
+                              "type": "directory"})
+            for f in files:
+                nodes.append({"id": os.path.join(project.project_path, f["name"]),
+                              "parent": project.project_path,
+                              "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"),
+                              "type": "file"})
+            nodes.insert(0, parent)
+            data["nodes"] = nodes
+
         self.write(data)
 
 class ProjectAjaxDeleteHandler(BaseHandler):
@@ -218,20 +369,23 @@ class ProjectAjaxDeleteHandler(BaseHandler):
             data["project"] = data["projects"][0]["project_name"]
             project = Project()
             project.parse_dict(data["projects"][0])
+            data["project_path"] = project.project_path
+            data["main_path"] = project.main_path
+            data["go_path"] = project.go_path
             dirs, files = project.listdir()
             if dirs != [] or files != []:
                 parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "directory"}
             else:
                 parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
             for d in dirs:
-                nodes.append({"id": os.path.join(project.project_path, d["name"]), 
-                              "parent": project.project_path, 
-                              "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                nodes.append({"id": os.path.join(project.project_path, d["name"]),
+                              "parent": project.project_path,
+                              "text": d["name"].replace("<", "&lt;").replace(">", "&gt;"),
                               "type": "directory"})
             for f in files:
-                nodes.append({"id": os.path.join(project.project_path, f["name"]), 
-                              "parent": project.project_path, 
-                              "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"), 
+                nodes.append({"id": os.path.join(project.project_path, f["name"]),
+                              "parent": project.project_path,
+                              "text": f["name"].replace("<", "&lt;").replace(">", "&gt;"),
                               "type": "file"})
             nodes.insert(0, parent)
             data["nodes"] = nodes

@@ -39,6 +39,9 @@ class CallHandler(BaseHandler):
             data["project"] = data["projects"][0]["project_name"]
             project = Project()
             project.parse_dict(data["projects"][0])
+            data["project_path"] = project.project_path
+            data["main_path"] = project.main_path
+            data["go_path"] = project.go_path
             dirs, files = project.listdir()
             if dirs != [] or files != []:
                 parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "directory"}

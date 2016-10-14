@@ -24,6 +24,7 @@
         </div>
         <div id="project_opration" class="btn-group" role="group" aria-label="...">
             <button id="add_btn" type="button" class="btn btn-default">Add</button>
+            <button id="edit_btn" type="button" class="btn btn-default">Edit</button>
             <button id="del_btn" type="button" class="btn btn-default">Delete</button>
             <button id="reindex_btn" type="button" class="btn btn-default">Reindex</button>
         </div>
@@ -91,6 +92,50 @@
                 <div class="modal-footer">
                     <button class="btn btn-default" type="button" data-dismiss="modal" aria-hidden="true">{{_("Cancel")}}</button>
                     <button id="add_project_btn" class="btn btn-primary" type="button" data-dismiss="modal" aria-hidden="true">{{_("Add")}}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="edit_project_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="editProjectModalLabel" aria-hidden="true">
+    <form id="form_edit" class="form-horizontal" enctype="multipart/form-data" action="/add/project" method="post">
+        <div id="dialog_edit" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="myModalLabel" class="modal-title">{{_("Edit Project")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        <div class="form-group">
+                            <label class="control-label col-xs-4" for="project_name">{{_("Project Name")}}</label>
+                            <div class="col-xs-8">
+                                <input class="form-control" type="text" name="project_name" autocomplete="off" id="project_name" readonly="readonly" placeholder="{{_("Project Name")}}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-4" for="project_path">{{_("Project Path")}}</label>
+                            <div class="col-xs-8">
+                                <input class="form-control" type="text" name="project_path" autocomplete="off" id="project_path" placeholder="{{_("Project Path")}}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-4" for="go_path">{{_("Go Path")}}</label>
+                            <div class="col-xs-8">
+                                <input class="form-control" type="text" name="go_path" autocomplete="off" id="go_path" placeholder="{{_("Go Path")}}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-4" for="main_path">{{_("Main Path")}}</label>
+                            <div class="col-xs-8">
+                                <input class="form-control" type="text" name="main_path" autocomplete="off" id="main_path" placeholder="{{_("Main Path")}}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" type="button" data-dismiss="modal" aria-hidden="true">{{_("Cancel")}}</button>
+                    <button id="edit_project_btn" class="btn btn-primary" type="button" data-dismiss="modal" aria-hidden="true">{{_("Edit")}}</button>
                 </div>
             </div>
         </div>
@@ -180,13 +225,19 @@
 <script src="{{ static_url('js/handlebars-v1.3.0.js') }}"></script>
 <script type="text/javascript">
 var current_project = "";
+var project_name = "";
+var project_path = "";
+var main_path = "";
+var go_path = "";
 var $project_select = $('#project_select select');
 
 var $add_btn = $('#add_btn');
+var $edit_btn = $('#edit_btn');
 var $del_btn = $('#del_btn');
 var $reindex_btn = $('#reindex_btn');
 
 var $add_project_btn = $('#add_project_btn');
+var $edit_project_btn = $('#edit_project_btn');
 var $del_project_btn = $('#del_project_btn');
 var $reindex_project_btn = $('#reindex_project_btn');
 var $search_btn = $('#search_button');
@@ -194,6 +245,8 @@ var $search_btn = $('#search_button');
 $project_select.change(changeProject);
 $add_btn.bind("click", showAddProject);
 $add_project_btn.bind("click", addProject);
+$edit_btn.bind("click", showEditProject);
+$edit_project_btn.bind("click", editProject);
 $del_btn.bind("click", showDelProject);
 $del_project_btn.bind("click", delProject);
 $reindex_btn.bind("click", showReindexProject);
@@ -304,6 +357,19 @@ $(document).ready(function(){
     if (data.project) {
         $('#project_select select').val(data.project);
         current_project = data.project;
+        project_name = data.project;
+    }
+
+    if (data.project_path) {
+        project_path = data.project_path;
+    }
+
+    if (data.main_path) {
+        main_path = data.main_path;
+    }
+
+    if (data.go_path) {
+        go_path = data.go_path;
     }
 
     var r_datas = new Bloodhound({
@@ -481,6 +547,19 @@ function changeProject() {
                     if (data.project) {
                         $('#project_select select').val(data.project);
                         current_project = data.project;
+                        project_name = data.project;
+                    }
+
+                    if (data.project_path) {
+                        project_path = data.project_path;
+                    }
+
+                    if (data.main_path) {
+                        main_path = data.main_path;
+                    }
+
+                    if (data.go_path) {
+                        go_path = data.go_path;
                     }
                 }
             }
@@ -490,6 +569,10 @@ function changeProject() {
 }
 
 function showAddProject() {
+    $("#add_project_modal input#project_name").val("");
+    $("#add_project_modal input#project_path").val("");
+    $("#add_project_modal input#go_path").val("");
+    $("#add_project_modal input#main_path").val("");
     $('#add_project_modal').modal('show');
 }
 
@@ -500,10 +583,10 @@ function addProject() {
         type: "post",
         async: true,
         url: ajax_url,
-        data: {"project_name": $("input#project_name").val(), 
-               "project_path": $("input#project_path").val(), 
-               "go_path": $("input#go_path").val(),
-               "main_path": $("input#main_path").val()},
+        data: {"project_name": $("#add_project_modal input#project_name").val(),
+               "project_path": $("#add_project_modal input#project_path").val(),
+               "go_path": $("#add_project_modal input#go_path").val(),
+               "main_path": $("#add_project_modal input#main_path").val()},
         success: function(data, textStatus) {
             if(textStatus == "success") {
                 $('#project_tree').jstree().delete_node($('#project_tree').jstree().get_json());
@@ -525,9 +608,82 @@ function addProject() {
                 if (data.project) {
                     $('#project_select select').val(data.project);
                     current_project = data.project;
+                    project_name = data.project;
+                }
+
+                if (data.project_path) {
+                    project_path = data.project_path;
+                }
+
+                if (data.main_path) {
+                    main_path = data.main_path;
+                }
+
+                if (data.go_path) {
+                    go_path = data.go_path;
                 }
             }
             $('#wait_add_project_modal').modal('hide');
+        }
+    });
+}
+
+function showEditProject() {
+    $("#edit_project_modal input#project_name").val(project_name);
+    $("#edit_project_modal input#project_path").val(project_path);
+    $("#edit_project_modal input#go_path").val(go_path);
+    $("#edit_project_modal input#main_path").val(main_path);
+    $('#edit_project_modal').modal('show');
+}
+
+function editProject() {
+    $('#wait_reindex_project_modal').modal('show');
+    var ajax_url = "/edit/project";
+    $.ajax({
+        type: "post",
+        async: true,
+        url: ajax_url,
+        data: {"project_name": $("#edit_project_modal input#project_name").val(),
+               "project_path": $("#edit_project_modal input#project_path").val(),
+               "go_path": $("#edit_project_modal input#go_path").val(),
+               "main_path": $("#edit_project_modal input#main_path").val()},
+        success: function(data, textStatus) {
+            if(textStatus == "success") {
+                $('#project_tree').jstree().delete_node($('#project_tree').jstree().get_json());
+                if (data.nodes) {
+                    data.nodes.forEach(function (value, index, array_notes) {
+                        createProjectNode(value.parent, value.id, value.text, "last", value.type);
+                    });
+                }
+
+                if (data.projects) {
+                    $('#project_select select').empty();
+                    data.projects.forEach(function (value, index, array_notes) {
+                        $('#project_select select').append(
+                            '<option value="' + value.project_name + '"">' + value.project_name + '</option>'
+                        );
+                    });
+                }
+
+                if (data.project) {
+                    $('#project_select select').val(data.project);
+                    current_project = data.project;
+                    project_name = data.project;
+                }
+
+                if (data.project_path) {
+                    project_path = data.project_path;
+                }
+
+                if (data.main_path) {
+                    main_path = data.main_path;
+                }
+
+                if (data.go_path) {
+                    go_path = data.go_path;
+                }
+            }
+            $('#wait_reindex_project_modal').modal('hide');
         }
     });
 }
@@ -565,6 +721,23 @@ function delProject() {
                 if (data.project) {
                     $('#project_select select').val(data.project);
                     current_project = data.project;
+                    project_name = data.project;
+                } else {
+                    $('#project_select select').val("");
+                    current_project = "";
+                    project_name = "";
+                }
+
+                if (data.project_path) {
+                    project_path = data.project_path;
+                }
+
+                if (data.main_path) {
+                    main_path = data.main_path;
+                }
+
+                if (data.go_path) {
+                    go_path = data.go_path;
                 }
             }
         }

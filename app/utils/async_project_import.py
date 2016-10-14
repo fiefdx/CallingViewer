@@ -150,7 +150,7 @@ class MultiProcessProjectImport(object):
     @gen.coroutine
     def import_project(self, project):
         """
-        projec: 
+        project: a Project object
         """
         result = False
         process_id = crc32sum_int(project.project_name) % self.process_num

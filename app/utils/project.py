@@ -99,6 +99,22 @@ class Projects(object):
             LOG.exception(e)
         return result
 
+    def edit(self, project):
+        self.__init()
+        result = False
+        try:
+            if Projects.PROJECTS.has_key(project.project_name):
+                Projects.PROJECTS[project.project_name] = project.to_dict()
+                with open(self.config_path, "wb") as fp:
+                    fp.write(json.dumps(Projects.PROJECTS))
+            project_data_path = os.path.join(CONFIG["data_path"], "projects", project.project_name)
+            if not os.path.exists(project_data_path) or not os.path.isdir(project_data_path):
+                os.makedirs(project_data_path)
+            result = True
+        except Exception, e:
+            LOG.exception(e)
+        return result
+
     def get(self, project_name):
         self.__init()
         result = False
