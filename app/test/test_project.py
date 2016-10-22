@@ -16,7 +16,7 @@ import sys
 cwd = os.path.split(os.path.realpath(__file__))[0]
 sys.path.insert(0, os.path.split(cwd)[0])
 
-from utils.project import Project, Projects 
+from models.project import Project, Projects
 from config import CONFIG
 import logger
 

@@ -30,7 +30,7 @@ class FUNC(object):
 
     def parse_dict(self, source):
         '''
-        @summary: parse the given dict to construct this html object
+        @summary: parse the given dict to construct this FUNC object
         @param source: dict type input param
         @result: True/False
         '''
@@ -43,7 +43,7 @@ class FUNC(object):
                 try:
                     setattr(self, attr, source[attr])
                 except:
-                    LOG.debug("some exception occured when extract %s attribute to html object, i will discard it",
+                    LOG.debug("some exception occured when extract %s attribute to FUNC object, i will discard it",
                         attr)
                     continue
             result = True

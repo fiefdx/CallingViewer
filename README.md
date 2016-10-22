@@ -6,6 +6,15 @@ Install CallingViewer
 ---------------------
 1. need to install golang callgraph
 2. need to install python-setuptools, python-tornado, python-whoosh, python-jieba, python-chardet, python-toro
+   ```bash
+   # install packages use pip
+   cd ./CallingViewer/requires
+   sudo pip install -r requirements.txt
+
+   # or install packages use apt-get at Ubuntu
+   sudo apt-get install python-setuptools python-tornado python-whoosh python-chardet python-toro
+   sudo easy_install toro
+   ```
 
 Run CallingViewer
 -----------------

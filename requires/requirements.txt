@@ -1,0 +1,8 @@
+################## requirements.txt ##################
+
+setuptools
+tornado
+toro
+whoosh
+jieba
+chardet

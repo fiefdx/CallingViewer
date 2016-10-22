@@ -28,8 +28,8 @@ import toro
 from config import CONFIG
 from utils.finder import Finder
 from utils import common_utils
-from utils.project import Project, Projects
 from utils.index_whoosh import IX, index_all_func
+from models.project import Project, Projects
 import logger
 
 LOG = logging.getLogger(__name__)

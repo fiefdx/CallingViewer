@@ -25,8 +25,8 @@ from config import CONFIG
 from app import Application
 from utils import common
 from utils.index_whoosh import IX
-from utils.project import Projects
 from utils.async_project_import import MultiProcessProjectImport as ProjectImport
+from models.project import Project, Projects
 import logger
 
 cwd = os.path.split(os.path.realpath(__file__))[0]

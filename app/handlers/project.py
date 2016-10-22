@@ -18,9 +18,9 @@ from config import CONFIG
 from base import BaseHandler, BaseSocketHandler
 from utils.finder import Finder
 from utils.index_whoosh import IX
-from utils.project import Project, Projects
 from utils.async_project_import import MultiProcessProjectImport as ProjectImport
 from utils.common_utils import sha1sum, escape_html
+from models.project import Project, Projects
 
 LOG = logging.getLogger(__name__)
 

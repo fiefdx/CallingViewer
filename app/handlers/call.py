@@ -18,8 +18,8 @@ from base import BaseHandler, BaseSocketHandler
 from utils.finder import Finder
 from utils.search_whoosh import search_index_no_page
 from utils.index_whoosh import IX
-from utils.project import Project, Projects
 from utils.common_utils import sha1sum, escape_html
+from models.project import Project, Projects
 
 LOG = logging.getLogger(__name__)
 
