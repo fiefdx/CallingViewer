@@ -28,9 +28,11 @@
 				}
 			}
 
-			var offset = $('.hljs-highlight-line').offset();
-			offset.top = offset.top - w.w_top;
-			window.scrollTo(offset);
+			if ($('.hljs-highlight-line').length == 1) {
+				var offset = $('.hljs-highlight-line').offset();
+				offset.top = offset.top - w.w_top;
+				window.scrollTo(offset);
+			}
 		} catch (e) {
 			console.error('LineNumbers error: ', e);
 		}
