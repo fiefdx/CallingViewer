@@ -427,7 +427,7 @@ class ViewHandler(BaseHandler):
                         LOG.exception(e)
                         file_path = "Can't read this file!"
         data["ext"] = os.path.splitext(file_path)[-1].lower()
-        data["code"] = escape_html(data["code"])
+        # data["code"] = escape_html(data["code"])
         data["line"] = int(line_num)
         data["path"] = file_path
         file_name = "%s:%s" % (os.path.split(file_path)[-1], line_num)
