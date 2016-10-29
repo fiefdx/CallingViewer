@@ -4,10 +4,10 @@
 {{_("CV - ")}}{{file_name}}
 {% end %}
 
+
 {% block stylesheet %}
-<!-- <link href="{{ static_url('css/input.css') }}" rel="stylesheet" > -->
 <link href="{{ static_url('js/codemirror/lib/codemirror.css') }}" rel="stylesheet" >
-<link href="{{ static_url('js/codemirror/theme/elegant.css') }}" rel="stylesheet" >
+<link href="{{ static_url('js/codemirror/theme/monokai.css') }}" rel="stylesheet" >
 <style type="text/css">
 .hljs-line-numbers {
     text-align: right;
@@ -47,7 +47,7 @@
 
 {% block body %}
 <div class="col-lg-12" style="margin-top: 55px; padding: 0px;">
-    <div id="code_div" class="col-lg-12" style="padding: 0px; overflow: auto;">
+    <div id="code_div" class="col-lg-12" style="padding: 0px; overflow: auto; font-size: 13px;">
         <textarea id="code" rows="4" class="code"></textarea>
     </div>
 </div>
@@ -55,76 +55,84 @@
 
 {% block javascript %}
 <script src="{{ static_url('js/codemirror/lib/codemirror.js') }}"></script>
+<script src="{{ static_url('js/codemirror/addon/selection/active-line.js') }}"></script>
+<script src="{{ static_url('js/codemirror/addon/edit/matchbrackets.js') }}"></script>
+<script src="{{ static_url('js/codemirror/addon/hint/show-hint.js') }}"></script>
+{% module NeedJsLib(mode) %}
 <script type="text/javascript">
 var result = "{% module JsString(result) %}";
-var line = 0;
+var scroll_line = -1;
 var data = JSON.parse(result);
+
+if (data.line) {
+    scroll_line = data.line;
+}
+
 if (data.path) {
     $("#file_path_div").append(
-        '<p class="navbar-text" style="text-align: center; padding: 12px;">' + data.path + '</p>'
+        '<p class="navbar-text" style="text-align: center; padding-top: 0px; padding-bottom: 0px;">' + data.path + get_line_num(scroll_line) + '</p>'
     );
 }
 
-code_type = "";
-if (data.code) {
-    if (data.ext && data.ext != '') {
-        switch (data.ext) {
-            case ".go":
-                code_type = "text/x-go";
-                break;
-            case ".py":
-                code_type = "python";
-                break;
-            case ".sh":
-                code_type = "bash";
-                break;
-            case ".c":
-                code_type = "c";
-                break;
-            case ".cc":
-                code_type = "c++";
-                break;
-            case ".html":
-                code_type = "html";
-                break;
-            case ".css":
-                code_type = "css";
-                break;
-            case ".js":
-                code_type = "javascript";
-                break;
-            case ".xml":
-                code_type = "xml";
-                break;
-            case ".json":
-                code_type = "json";
-                break;
-            case ".sql":
-                code_type = "sql";
-                break;
-            case ".php":
-                code_type = "php";
-                break;
-            default:
-                code_type = "";
-        }
+function get_line_num(n) {
+    if (n == -1) {
+        return "";
+    } else {
+        return ":" + n;
     }
 }
 
-if (data.line) {
-    line = data.line;
-}
-
-console.log(code_type);
 $(document).ready(function(){
     var codeMirror = CodeMirror.fromTextArea(document.getElementById('code'), {
+        styleActiveLine: true,
         lineNumbers: true,
         lineWrapping: false,
-        mode: "text/x-go",
-        theme: 'elegant',
+        matchBrackets: true,
+        indentUnit: 4,
+        indentWithTabs: true,
+        tabSize: 4,
+        gutters: ["note-gutter"],
     });
     codeMirror.getDoc().setValue(data.code);
-    // codeMirror.setSize(1000, 500);
+    codeMirror.setOption("theme", "monokai");
+    codeMirror.setOption("mode", "{{mode}}");
+    if (scroll_line > -1) {
+        codeMirror.setGutterMarker(scroll_line - 1, "note-gutter", makeMarker());
+    }
+
+    jumpToLine(scroll_line);
+
+    function makeMarker() {
+        var marker = document.createElement("div");
+        marker.style.color = "#F00";
+        marker.style.width = "10px";
+        marker.style.alignContent = "center";
+        marker.innerHTML = "●";
+        return marker;
+    }
+
+    function jumpToLine(i) {
+        // editor.getLineHandle does not help as it does not return the reference of line.
+        codeMirror.setCursor(i - 1);
+        window.setTimeout(function() {
+           codeMirror.addLineClass(i - 1, null, "center-me");
+           var line = $('.CodeMirror-lines .center-me');
+           var h = line.parent();
+
+           $('.CodeMirror-scroll').scrollTop(0).scrollTop(line.offset().top - $('.CodeMirror-scroll').offset().top - Math.round($('.CodeMirror-scroll').height()/2));
+       }, 200);
+    }
+
+    var code_view_hight_delta = 65;
+    var code_view_width_delta = 30;
+
+    window.onload = window.onresize = function(){
+        $(document).ready(function(){
+            var window_height = $(window).height();
+            var window_width = $(window).width();
+            codeMirror.setSize(window_width - code_view_width_delta, window_height - code_view_hight_delta);
+        });
+    }
 });
 </script>
 {% end %}

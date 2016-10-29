@@ -13,12 +13,15 @@
       <meta name="keywords" content="html, search, note, rich note">
       <meta name="description" content="html rich note search">
     {% end %}
-   <!--  <link href="{{ static_url("bootstrap/css/bootstrap.css") }}" rel="stylesheet" />
-    <link href="{{ static_url("bootstrap/css/bootstrap-theme.css") }}" rel="stylesheet" /> -->
-    <!-- <link href="{{ static_url("css/bootstrap.css") }}" rel="stylesheet" > -->
-    <!-- <link href="{{ static_url("css/template.css") }}" rel="stylesheet" /> -->
+
+    {% block default_style %}
+    <link href="{{ static_url("bootstrap/css/bootstrap.css") }}" rel="stylesheet" />
+    <link href="{{ static_url("bootstrap/css/bootstrap-theme.css") }}" rel="stylesheet" />
+    <link href="{{ static_url("css/bootstrap.css") }}" rel="stylesheet" >
+    <link href="{{ static_url("css/template.css") }}" rel="stylesheet" />
     <script src="{{ static_url("jquery/jquery-2.0.3.js") }}"></script>
     <script src="{{ static_url("bootstrap/js/bootstrap.js") }}"></script>
+    {% end %}
     
     {% block stylesheet %}
     {% end %}

@@ -172,3 +172,24 @@ def listdir(dir_path = ".", sort_by = "name", desc = False):
     except Exception, e:
         LOG.exception(e)
     return listsort(dirs, files, sort_by = sort_by, desc = desc)
+
+def get_mode(ext):
+    mode_map = {".go": "text/x-go",
+                ".php": "text/x-php",
+                ".py": "text/x-python",
+                ".cpy": "text/x-cython",
+                ".java": "text/x-java:",
+                ".cc": "text/x-c++src",
+                ".c": "text/x-csrc",
+                ".css": "text/x-scss",
+                ".sh": "text/x-sh",
+                ".js": "text/javascript",
+                ".html": "text/html",
+                ".xml": "text/html",
+                ".json": "application/json",
+                ".sql": "text/x-sql",
+                ".yml": "text/x-yaml"}
+    if ext.lower() in mode_map:
+        return mode_map[ext]
+    else:
+        return ""

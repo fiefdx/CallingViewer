@@ -18,7 +18,7 @@ from base import BaseHandler, BaseSocketHandler
 from utils.finder import Finder
 from utils.search_whoosh import search_index_no_page
 from utils.index_whoosh import IX
-from utils.common_utils import sha1sum, escape_html
+from utils.common_utils import sha1sum, escape_html, get_mode
 from models.project import Project, Projects
 
 LOG = logging.getLogger(__name__)
@@ -248,13 +248,13 @@ class ViewHandler(BaseHandler):
 
         data = {}
         data["ext"] = os.path.splitext(file_path)[-1].lower()
-        # data["code"] = escape_html(code)
+        LOG.warning("ext: %s", data["ext"])
         data["code"] = code
         print data["code"]
         data["line"] = int(line_num)
         data["path"] = file_path
         file_name = "%s:%s" % (os.path.split(file_path)[-1], line_num)
-        self.render("call/view.html", current_nav = "View", file_name = file_name, result = json.dumps(data))
+        self.render("call/view.html", current_nav = "View", file_name = file_name, mode = get_mode(data["ext"]), result = json.dumps(data))
 
 class SearchAjaxHandler(BaseHandler):
     @gen.coroutine
