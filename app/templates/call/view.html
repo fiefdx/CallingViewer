@@ -9,28 +9,41 @@
 <link href="{{ static_url('js/codemirror/lib/codemirror.css') }}" rel="stylesheet" >
 <link href="{{ static_url('js/codemirror/theme/monokai.css') }}" rel="stylesheet" >
 <style type="text/css">
-.hljs-line-numbers {
-    text-align: right;
-    border-right: 1px solid #ccc;
-    color: #999;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+div#cntnr {
+    display: none;
+    position: fixed;
+    border: 1px solid #B2B2B2;
+    width: 170px;      
+    background: #F9F9F9;
+    box-shadow: 0px 0px 0px #E9E9E9;
+    border-radius: 4px;
+    z-index: 10;
 }
-.hljs-highlight-line {
-    text-align: right;
-    border-right: 0px solid #000;
-    background-color: #ccc;
-    color: #00f;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+ul#items {
+    list-style: none;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 16px;
+    color: #333333;
+}
+hr { 
+    width: 85%; 
+    background-color: #E4E4E4;
+    border-color: #E4E4E4;
+    color: #E4E4E4;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+li#item {
+    padding: 3px;
+    padding-left: 10px;
+}
+ul#items :hover {
+    color: white;
+    background: #284570;
+    border-radius: 2px;
 }
 </style>
 {% end %}
@@ -50,6 +63,21 @@
     <div id="code_div" class="col-lg-12" style="padding: 0px; overflow: auto; font-size: 13px;">
         <textarea id="code" rows="4" class="code"></textarea>
     </div>
+</div>
+{% end %}
+
+{% block menu %}
+<div id="cntnr">
+    <ul id="items">
+        <li id="item">Go To Definition</li>
+        <li id="item">Find References</li>  
+    </ul>
+    <hr/>
+    <ul id="items">
+        <li id="item">Copy</li>
+        <li id="item">Paste</li>
+        <li id="item">Delete</li>  
+    </ul>
 </div>
 {% end %}
 
@@ -82,7 +110,7 @@ function get_line_num(n) {
     }
 }
 
-$(document).ready(function(){
+$(document).ready(function() {
     var codeMirror = CodeMirror.fromTextArea(document.getElementById('code'), {
         styleActiveLine: true,
         lineNumbers: true,
@@ -98,9 +126,35 @@ $(document).ready(function(){
     codeMirror.setOption("mode", "{{mode}}");
     if (scroll_line > -1) {
         codeMirror.setGutterMarker(scroll_line - 1, "note-gutter", makeMarker());
+        jumpToLine(scroll_line);
+    }
+    
+    codeMirror.on("contextmenu", function(i, e) {
+        console.log("codeMirror: " + e.pageX + ", " + e.pageY);
+        $("#cntnr").css("left", e.pageX);
+        $("#cntnr").css("top", e.pageY);
+        $("#cntnr").fadeIn(200, startFocusOut());
+    });
+
+    $(document).bind("contextmenu", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    function startFocusOut() {
+        codeMirror.on("mousedown", function(i, e) {
+            $("#cntnr").hide();
+            codeMirror.off("mousedown");
+        });
+        $(document).on("click", function() {
+            $("#cntnr").hide();        
+            $(document).off("click");
+        });
     }
 
-    jumpToLine(scroll_line);
+    $("#items > li").click(function() {
+        console.log("You have selected " + $(this).text());
+    });
 
     function makeMarker() {
         var marker = document.createElement("div");
@@ -118,7 +172,6 @@ $(document).ready(function(){
            codeMirror.addLineClass(i - 1, null, "center-me");
            var line = $('.CodeMirror-lines .center-me');
            var h = line.parent();
-
            $('.CodeMirror-scroll').scrollTop(0).scrollTop(line.offset().top - $('.CodeMirror-scroll').offset().top - Math.round($('.CodeMirror-scroll').height()/2));
        }, 200);
     }

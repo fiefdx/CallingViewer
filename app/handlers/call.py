@@ -248,9 +248,7 @@ class ViewHandler(BaseHandler):
 
         data = {}
         data["ext"] = os.path.splitext(file_path)[-1].lower()
-        LOG.warning("ext: %s", data["ext"])
         data["code"] = code
-        print data["code"]
         data["line"] = int(line_num)
         data["path"] = file_path
         file_name = "%s:%s" % (os.path.split(file_path)[-1], line_num)

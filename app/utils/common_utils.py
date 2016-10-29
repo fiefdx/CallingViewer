@@ -188,7 +188,8 @@ def get_mode(ext):
                 ".xml": "text/html",
                 ".json": "application/json",
                 ".sql": "text/x-sql",
-                ".yml": "text/x-yaml"}
+                ".yml": "text/x-yaml",
+                ".toml": "text/x-toml"}
     if ext.lower() in mode_map:
         return mode_map[ext]
     else:
