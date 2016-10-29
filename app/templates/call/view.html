@@ -146,9 +146,9 @@ $(document).ready(function() {
             $("#cntnr").hide();
             codeMirror.off("mousedown");
         });
-        $(document).on("click", function() {
+        $("#cntnr").on("click", function() {
             $("#cntnr").hide();        
-            $(document).off("click");
+            $("#cntnr").off("click");
         });
     }
 
