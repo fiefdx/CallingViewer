@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    os.environ["GOPATH"] = "%s:%s" % (os.environ["GOPATH"], CONFIG["go_path"])
+    os.environ["GOPATH"] = "%s" % "/home/breeze/Develop/IDGO"
     logger.config_logging(file_name = "test.log", 
                           log_level = CONFIG["log_level"], 
                           dir_name = "logs", 
@@ -36,7 +36,9 @@ if __name__ == "__main__":
                           console = True)
     LOG.info("Test Start")
     t = time.time()
-    common_utils.make_callgraph_data()
+    # common_utils.make_callgraph_data()
+    r = common_utils.get_definition_from_guru("/home/breeze/Develop/IDGO/src/github.com/flike/idgo/server/command.go", 19, 15)
+    LOG.debug("get_definition_from_guru: %s", r)
     tt = time.time()
     LOG.info("Use Time: %ss", tt - t)
     LOG.info("Test Exit!")

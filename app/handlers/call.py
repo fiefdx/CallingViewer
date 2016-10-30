@@ -18,7 +18,7 @@ from base import BaseHandler, BaseSocketHandler
 from utils.finder import Finder
 from utils.search_whoosh import search_index_no_page
 from utils.index_whoosh import IX
-from utils.common_utils import sha1sum, escape_html, get_mode
+from utils.common_utils import sha1sum, escape_html, get_mode, get_definition_from_guru, get_referrers_from_guru
 from models.project import Project, Projects
 
 LOG = logging.getLogger(__name__)
@@ -48,14 +48,14 @@ class CallHandler(BaseHandler):
             else:
                 parent = {"id": project.project_path, "parent": "#", "text": os.path.split(project.project_path)[-1], "type": "file"}
             for d in dirs:
-                nodes.append({"id": os.path.join(project.project_path, d["name"]), 
-                              "parent": project.project_path, 
-                              "text": escape_html(d["name"]), 
+                nodes.append({"id": os.path.join(project.project_path, d["name"]),
+                              "parent": project.project_path,
+                              "text": escape_html(d["name"]),
                               "type": "directory"})
             for f in files:
-                nodes.append({"id": os.path.join(project.project_path, f["name"]), 
-                              "parent": project.project_path, 
-                              "text": escape_html(f["name"]), 
+                nodes.append({"id": os.path.join(project.project_path, f["name"]),
+                              "parent": project.project_path,
+                              "text": escape_html(f["name"]),
                               "type": "file"})
             nodes.insert(0, parent)
             data["nodes"] = nodes
@@ -99,7 +99,7 @@ class CallHandler(BaseHandler):
                                  "parent": parent_id,
                                  "text": escape_html(item[0]),
                                  "type": "leaf"})
-        
+
             tree.sort(lambda x,y : cmp(x['text'], y['text']))
             tree.insert(0, parent)
         LOG.debug("tree: %s", tree)
@@ -145,11 +145,11 @@ class CallAjaxHandler(BaseHandler):
                     else:
                         child_id = "%s%s%s%s%s" % (q, ID_SP, item[0], ID_SP, item[1])
                         child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
-                        nodes.append({"id": child_id, 
-                                      "parent": q_id, 
-                                      "text": escape_html(item[0]), 
+                        nodes.append({"id": child_id,
+                                      "parent": q_id,
+                                      "text": escape_html(item[0]),
                                       "type": "leaf"})
-        
+
         nodes.sort(lambda x,y : cmp(x['text'], y['text']))
         LOG.debug("tree: %s", tree)
         data = {}
@@ -254,6 +254,95 @@ class ViewHandler(BaseHandler):
         file_name = "%s:%s" % (os.path.split(file_path)[-1], line_num)
         self.render("call/view.html", current_nav = "View", file_name = file_name, mode = get_mode(data["ext"]), result = json.dumps(data))
 
+class CodeViewHandler(BaseHandler):
+    def get(self):
+        '''
+        q like q="/home/breeze/Develop/IDGO/src/github.com/flike/idgo/server/server.go:40:2"
+        '''
+        q = self.get_argument("q", "").strip()
+        project_name = self.get_argument("p", "").strip()
+
+        LOG.debug("q: %s, p: %s", q, project_name)
+
+        file_path, line_num = "Can't open the root element's file!", 0
+
+        code = ""
+        if q != "":
+            if ":" in q:
+                file_path, line_num, ch = q.split(":")
+            if not os.path.isabs(file_path):
+                file_path = os.path.join(CONFIG["abs_path"], file_path)
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                with open(file_path, "rb") as fp:
+                    code = fp.read()
+
+        data = {}
+        data["ext"] = os.path.splitext(file_path)[-1].lower()
+        data["code"] = code
+        data["line"] = int(line_num)
+        data["path"] = file_path
+        file_name = "%s:%s" % (os.path.split(file_path)[-1], line_num)
+        self.render("call/view.html", current_nav = "View", file_name = file_name, mode = get_mode(data["ext"]), result = json.dumps(data))
+
+class GoToDefinitionAjaxHandler(BaseHandler):
+    @gen.coroutine
+    def post(self):
+        file_path = self.get_argument("file_path", "").strip()
+        query = self.get_argument("q", "").strip()
+        line = self.get_argument("line", "0").strip()
+        ch = self.get_argument("ch", "0").strip()
+        project_name = self.get_argument("project_name", "").strip()
+        line = int(line)
+        ch = int(ch)
+        LOG.debug("project_name: %s, q: %s, line: %s, ch: %s", project_name, query, line, ch)
+        
+        projects = Projects()
+        data = {}
+        data["project"] = project_name
+        project = Project()
+        project.parse_dict(projects.get(project_name))
+        os.environ["GOPATH"] = project.go_path
+        LOG.debug("GOPATH: %s", project.go_path)
+
+        r_json = get_definition_from_guru(file_path, line, ch)
+        if r_json:
+            r = json.loads(r_json)
+            data["file_path"] = r["definition"]["objpos"]
+            data["desc"] = r["definition"]["desc"]
+        LOG.debug("GoToDefinition: %s", data)
+
+        self.write(data)
+
+class FindReferrersAjaxHandler(BaseHandler):
+    @gen.coroutine
+    def post(self):
+        file_path = self.get_argument("file_path", "").strip()
+        query = self.get_argument("q", "").strip()
+        line = self.get_argument("line", "0").strip()
+        ch = self.get_argument("ch", "0").strip()
+        project_name = self.get_argument("project_name", "").strip()
+        line = int(line)
+        ch = int(ch)
+        LOG.debug("project_name: %s, q: %s, line: %s, ch: %s", project_name, query, line, ch)
+        
+        projects = Projects()
+        data = {}
+        data["project"] = project_name
+        project = Project()
+        project.parse_dict(projects.get(project_name))
+        os.environ["GOPATH"] = project.go_path
+        LOG.debug("GOPATH: %s", project.go_path)
+
+        r_json = get_referrers_from_guru(file_path, line, ch)
+        if r_json:
+            r = json.loads(r_json)
+            data["file_path"] = r["referrers"]["objpos"]
+            data["desc"] = r["referrers"]["desc"]
+            data["refs"] = r["referrers"]["refs"]
+        LOG.debug("FindReferrers: %s", data)
+
+        self.write(data)
+
 class SearchAjaxHandler(BaseHandler):
     @gen.coroutine
     def get(self):
@@ -269,4 +358,3 @@ class SearchAjaxHandler(BaseHandler):
             result.append(fields["name"])
             LOG.debug("Doc_id: %s, %s", fields["doc_id"], fields["name"])
         self.write(json.dumps(result))
-		

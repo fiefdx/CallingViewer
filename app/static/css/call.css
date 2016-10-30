@@ -83,3 +83,25 @@
 .control-label {
     margin-top: 10px;
 }
+
+#form_referrers {
+    margin-top: 150px;
+    margin-bottom: 0px; 
+    padding: 0px;
+}
+
+#form_referrers .modal-content .modal-header {
+    text-align: center;
+}
+
+#form_referrers .modal-content .modal-body {
+    text-align: left;
+}
+
+#form_referrers .modal-content .modal-body .well {
+    text-align: left;
+    overflow-x: auto;
+    overflow-y: scroll;
+    widows: 800px;
+    height: 400px;
+}

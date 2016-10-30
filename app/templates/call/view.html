@@ -8,18 +8,19 @@
 {% block stylesheet %}
 <link href="{{ static_url('js/codemirror/lib/codemirror.css') }}" rel="stylesheet" >
 <link href="{{ static_url('js/codemirror/theme/monokai.css') }}" rel="stylesheet" >
+<link href="{{ static_url('css/call.css') }}" rel="stylesheet" >
 <style type="text/css">
-div#cntnr {
+div.cntnr {
     display: none;
     position: fixed;
     border: 1px solid #B2B2B2;
-    width: 170px;      
+    width: 170px;
     background: #F9F9F9;
     box-shadow: 0px 0px 0px #E9E9E9;
     border-radius: 4px;
     z-index: 10;
 }
-ul#items {
+ul.items {
     list-style: none;
     margin-top: 4px;
     margin-bottom: 4px;
@@ -28,19 +29,19 @@ ul#items {
     font-size: 16px;
     color: #333333;
 }
-hr { 
-    width: 85%; 
+hr {
+    width: 85%;
     background-color: #E4E4E4;
     border-color: #E4E4E4;
     color: #E4E4E4;
     margin-top: 0px;
     margin-bottom: 0px;
 }
-li#item {
+li.item {
     padding: 3px;
     padding-left: 10px;
 }
-ul#items :hover {
+ul.items :hover {
     color: white;
     background: #284570;
     border-radius: 2px;
@@ -67,17 +68,34 @@ ul#items :hover {
 {% end %}
 
 {% block menu %}
-<div id="cntnr">
-    <ul id="items">
-        <li id="item">Go To Definition</li>
-        <li id="item">Find References</li>  
+<div id="referrers_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="referrersModalLabel" aria-hidden="true">
+    <form id="form_referrers" class="form-horizontal" enctype="multipart/form-data">
+        <div id="dialog_referrers" class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="myModalLabel" class="modal-title">{{_("Referrers")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        <ol class="referrers_list">
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="cntnr">
+    <ul class="items">
+        <li id="item_to_def" class="item">Go To Definition</li>
+        <li id="item_find_ref" class="item">Find Referrers</li>
     </ul>
-    <hr/>
-    <ul id="items">
-        <li id="item">Copy</li>
-        <li id="item">Paste</li>
-        <li id="item">Delete</li>  
-    </ul>
+    <!-- <hr/>
+    <ul class="items">
+        <li id="item_copy" class="item">Copy</li>
+        <li id="item_paste" class="item">Paste</li>
+    </ul> -->
 </div>
 {% end %}
 
@@ -91,12 +109,15 @@ ul#items :hover {
 var result = "{% module JsString(result) %}";
 var scroll_line = -1;
 var data = JSON.parse(result);
+var file_path = "";
+var project_name = "idgo";
 
 if (data.line) {
     scroll_line = data.line;
 }
 
 if (data.path) {
+    file_path = data.path;
     $("#file_path_div").append(
         '<p class="navbar-text" style="text-align: center; padding-top: 0px; padding-bottom: 0px;">' + data.path + get_line_num(scroll_line) + '</p>'
     );
@@ -128,12 +149,30 @@ $(document).ready(function() {
         codeMirror.setGutterMarker(scroll_line - 1, "note-gutter", makeMarker());
         jumpToLine(scroll_line);
     }
-    
+
+    var $def_btn = $('#item_to_def');
+    var $ref_btn = $('#item_find_ref');
+    var $copy_btn = $('#item_copy');
+    var $paste_btn = $('#item_paste');
+    var $referrers_list = $('ol.referrers_list');
+
+    $def_btn.bind("click", goToDefinition);
+    $ref_btn.bind("click", findReferrers);
+
     codeMirror.on("contextmenu", function(i, e) {
-        console.log("codeMirror: " + e.pageX + ", " + e.pageY);
-        $("#cntnr").css("left", e.pageX);
-        $("#cntnr").css("top", e.pageY);
-        $("#cntnr").fadeIn(200, startFocusOut());
+        // console.log("codeMirror: " + e.pageX + ", " + e.pageY);
+        $(".cntnr").css("left", e.pageX);
+        $(".cntnr").css("top", e.pageY);
+        selected_flag = codeMirror.somethingSelected();
+        selection = codeMirror.getSelection().trim();
+        if (codeMirror.somethingSelected() == false || selection == "") {
+            $(".item").css("pointer-events", "none");
+            $(".item").css("opacity", 0.6);
+        } else {
+            $(".item").css("pointer-events", "auto");
+            $(".item").css("opacity", 1);
+        }
+        $(".cntnr").fadeIn(200, startFocusOut());
     });
 
     $(document).bind("contextmenu", function(e) {
@@ -141,20 +180,30 @@ $(document).ready(function() {
         e.stopPropagation();
     });
 
-    function startFocusOut() {
-        codeMirror.on("mousedown", function(i, e) {
-            $("#cntnr").hide();
-            codeMirror.off("mousedown");
-        });
-        $("#cntnr").on("click", function() {
-            $("#cntnr").hide();        
-            $("#cntnr").off("click");
-        });
+    function goToDefinition() {
+        selection = codeMirror.getSelection().trim();
+        cursor = codeMirror.getCursor("from");
+        // console.log("selected: '" + selection + "', line: " + cursor.line + ", ch: " + cursor.ch);
+        getDefinition(selection, cursor.line, cursor.ch);
     }
 
-    $("#items > li").click(function() {
-        console.log("You have selected " + $(this).text());
-    });
+    function findReferrers() {
+        selection = codeMirror.getSelection().trim();
+        cursor = codeMirror.getCursor("from");
+        // console.log("selected: '" + selection + "', line: " + cursor.line + ", ch: " + cursor.ch);
+        getReferrers(selection, cursor.line, cursor.ch);
+    }
+
+    function startFocusOut() {
+        codeMirror.on("mousedown", function(i, e) {
+            $(".cntnr").hide();
+            codeMirror.off("mousedown");
+        });
+        $(".cntnr").on("click", function() {
+            $(".cntnr").hide();
+            $(".cntnr").off("click");
+        });
+    }
 
     function makeMarker() {
         var marker = document.createElement("div");
@@ -174,6 +223,56 @@ $(document).ready(function() {
            var h = line.parent();
            $('.CodeMirror-scroll').scrollTop(0).scrollTop(line.offset().top - $('.CodeMirror-scroll').offset().top - Math.round($('.CodeMirror-scroll').height()/2));
        }, 200);
+    }
+
+    function getDefinition(s, l, c) {
+        var ajax_url = "/project/definition";
+        $.ajax({
+            type: "post",
+            async: false,
+            url: ajax_url,
+            data: {"q": s, 
+                   "file_path": file_path, 
+                   "line": l,
+                   "ch": c,
+                   "project_name": project_name},
+            success: function(data, textStatus) {
+                if (textStatus == "success") {
+                    if (data.file_path) {
+                        // console.log("getDefinition: " + data.file_path + ", project: " + data.project + ", desc" + data.desc);
+                        window.open('/code/view?q=' + data.file_path + '&p=' + data.project , '_blank');
+                    }
+                }
+            }
+        });
+    }
+
+    function getReferrers(s, l, c) {
+        var ajax_url = "/project/referrers";
+        $.ajax({
+            type: "post",
+            async: false,
+            url: ajax_url,
+            data: {"q": s, 
+                   "file_path": file_path, 
+                   "line": l,
+                   "ch": c,
+                   "project_name": project_name},
+            success: function(data, textStatus) {
+                if (textStatus == "success") {
+                    $referrers_list.empty();
+                    if (data.file_path) {
+                        // console.log("getReferrers: " + data.file_path + ", project: " + data.project + ", desc: " + data.desc + ", refs: " + data.refs);
+                        data.refs.forEach(function (value, index, array_refs) {
+                            $referrers_list.append(
+                                '<li><a href="' + '/code/view?q=' + value + '&p=' + data.project + '" target="_blank">'+ value + '</a></li>'
+                            );
+                        });
+                        $('#referrers_modal').modal('show');
+                    }
+                }
+            }
+        });
     }
 
     var code_view_hight_delta = 65;

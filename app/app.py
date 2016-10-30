@@ -28,6 +28,7 @@ class Application(tornado.web.Application):
                     (r"/leaf", call.CallAjaxHandler),
                     (r"/search", call.SearchAjaxHandler),
                     (r"/view", call.ViewHandler),
+                    (r"/code/view", call.CodeViewHandler),
                     (r"/add/project", project.ProjectAjaxAddHandler),
                     (r"/edit/project", project.ProjectAjaxEditHandler),
                     (r"/reindex/project", project.ProjectAjaxReindexHandler),
@@ -35,6 +36,8 @@ class Application(tornado.web.Application):
                     (r"/delete/project", project.ProjectAjaxDeleteHandler),
                     (r"/project/leaf", project.ProjectAjaxLeafHandler),
                     (r"/project/view", project.ViewHandler),
+                    (r"/project/definition", call.GoToDefinitionAjaxHandler),
+                    (r"/project/referrers", call.FindReferrersAjaxHandler),
                     (r"/test", test.TestHandler),
                     ]
         settings = dict(debug = CONFIG["app_debug"],

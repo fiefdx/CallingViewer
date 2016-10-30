@@ -15,7 +15,7 @@ import datetime
 import time
 import hashlib
 import subprocess
-from subprocess import Popen
+from subprocess import Popen, PIPE
 
 from config import CONFIG
 
@@ -61,6 +61,51 @@ def make_callgraph_data(main_path, data_path):
     except Exception, e:
         LOG.exception(e)
     return result
+
+def get_definition_from_guru(file_path, line, ch):
+    '''
+    line: offset from 0
+    ch: offset from 0
+    '''
+    result = False
+    cmd = r'guru -reflect -format json definition %s:#%s'
+    fp = open(file_path, "rb")
+    offset = 0
+    for l in xrange(line):
+        offset += len(fp.readline())
+    offset += ch
+    LOG.debug("cmd: %s", cmd % (file_path, offset))
+    try:
+        p = Popen(cmd % (file_path, offset), shell = True, stdout = PIPE)
+        p.wait()
+        result = p.stdout.read()
+        LOG.debug("get_definition_from_guru: %s", result)
+    except Exception, e:
+        LOG.exception(e)
+    return result
+
+def get_referrers_from_guru(file_path, line, ch):
+    '''
+    line: offset from 0
+    ch: offset from 0
+    '''
+    result = False
+    cmd = r'guru -reflect -format json referrers %s:#%s'
+    fp = open(file_path, "rb")
+    offset = 0
+    for l in xrange(line):
+        offset += len(fp.readline())
+    offset += ch
+    LOG.debug("cmd: %s", cmd % (file_path, offset))
+    try:
+        p = Popen(cmd % (file_path, offset), shell = True, stdout = PIPE)
+        p.wait()
+        result = p.stdout.read()
+        LOG.debug("get_referrers_from_guru: %s", result)
+    except Exception, e:
+        LOG.exception(e)
+    return result
+
 
 def get_file_size(size):
     result = ""
