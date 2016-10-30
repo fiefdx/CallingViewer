@@ -4,7 +4,7 @@ A golang project code viewer developed by python, it has project tree view and p
 
 Install CallingViewer
 ---------------------
-1. need to install golang callgraph
+1. need to install golang callgraph, guru
 2. need to install python-setuptools, python-tornado, python-whoosh, python-jieba, python-chardet, python-toro
    ```bash
    # install packages use pip
@@ -74,3 +74,13 @@ Run CallingViewer
    ![Alt text](/doc/open_source_code_by_tree_context_menu.png?raw=true "open_source_code_by_tree_context_menu")
 
 7. you can type keyword in the "Filter" input, so, it will just display the result contained the keyword
+
+8. in the code editor, you can select a key word and right click, then get a context menu, you can use the context menu to 'Go To Definition' or 'Find Referrers', click the context menu ro click the referrers list item, you can open the specified source code file in a new browser tab
+
+  _ex. get editor context menu like below_
+
+  ![Alt text](/doc/editor_context_menu.png?raw=true "editor_context_menu")
+
+  _ex. get referrers list like below_
+
+  ![Alt text](/doc/editor_referrers_list.png?raw=true "editor_referrers_list")
