@@ -110,7 +110,11 @@ var result = "{% module JsString(result) %}";
 var scroll_line = -1;
 var data = JSON.parse(result);
 var file_path = "";
-var project_name = "idgo";
+var project_name = "";
+
+if (data.project) {
+    project_name = data.project;
+}
 
 if (data.line) {
     scroll_line = data.line;

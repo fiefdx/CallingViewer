@@ -394,6 +394,7 @@ class ProjectAjaxDeleteHandler(BaseHandler):
 class ViewHandler(BaseHandler):
     def get(self):
         q = self.get_argument("q", "").strip()
+        project_name = self.get_argument("p", "").strip()
 
         LOG.debug("q: %s", q)
 
@@ -429,5 +430,6 @@ class ViewHandler(BaseHandler):
         data["ext"] = os.path.splitext(file_path)[-1].lower()
         data["line"] = int(line_num)
         data["path"] = file_path
+        data["project"] = project_name
         file_name = "%s:%s" % (os.path.split(file_path)[-1], line_num)
         self.render("call/view.html", current_nav = "View", file_name = file_name, mode = get_mode(data["ext"]), result = json.dumps(data))

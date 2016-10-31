@@ -251,6 +251,7 @@ class ViewHandler(BaseHandler):
         data["code"] = code
         data["line"] = int(line_num)
         data["path"] = file_path
+        data["project"] = project_name
         file_name = "%s:%s" % (os.path.split(file_path)[-1], line_num)
         self.render("call/view.html", current_nav = "View", file_name = file_name, mode = get_mode(data["ext"]), result = json.dumps(data))
 
@@ -281,6 +282,7 @@ class CodeViewHandler(BaseHandler):
         data["code"] = code
         data["line"] = int(line_num)
         data["path"] = file_path
+        data["project"] = project_name
         file_name = "%s:%s" % (os.path.split(file_path)[-1], line_num)
         self.render("call/view.html", current_nav = "View", file_name = file_name, mode = get_mode(data["ext"]), result = json.dumps(data))
 
