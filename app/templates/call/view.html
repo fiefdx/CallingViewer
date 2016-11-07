@@ -86,6 +86,23 @@ ul.items :hover {
         </div>
     </form>
 </div>
+<div id="wait_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="waitModalLabel" aria-hidden="true">
+    <form id="form_wait" class="form-horizontal">
+        {% raw xsrf_form_html() %}
+        <div id="dialog_wait" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="waitModalLabel" class="modal-title">{{_("Waiting")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <img id="wait_img" src="{{ static_url("img/Pulse.gif") }}">
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
 <div class="cntnr">
     <ul class="items">
         <li id="item_to_def" class="item">Go To Definition</li>
@@ -230,6 +247,7 @@ $(document).ready(function() {
     }
 
     function getDefinition(s, l, c) {
+        $('#wait_modal').modal('show');
         var ajax_url = "/project/definition";
         $.ajax({
             type: "post",
@@ -247,15 +265,17 @@ $(document).ready(function() {
                         window.open('/code/view?q=' + data.file_path + '&p=' + data.project , '_blank');
                     }
                 }
+                $('#wait_modal').modal('hide');
             }
         });
     }
 
     function getReferrers(s, l, c) {
+        $('#wait_modal').modal('show');
         var ajax_url = "/project/referrers";
         $.ajax({
             type: "post",
-            async: false,
+            async: true,
             url: ajax_url,
             data: {"q": s, 
                    "file_path": file_path, 
@@ -275,6 +295,7 @@ $(document).ready(function() {
                         $('#referrers_modal').modal('show');
                     }
                 }
+                $('#wait_modal').modal('hide');
             }
         });
     }

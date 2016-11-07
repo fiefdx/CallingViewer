@@ -462,6 +462,7 @@ $(document).ready(function(){
                     "Go To Context": {
                         "separator_before": false,
                         "separator_after": false,
+                        "icon": false,
                         "label": "Go To Context",
                         "action": function (obj) {
                             window.open('/view?q=' + node.id + '&d=false&called=' + $("input[type=checkbox][name=called]").prop("checked") + '&p=' + $('#project_select select').val() , '_blank');
@@ -470,6 +471,7 @@ $(document).ready(function(){
                     "Go To Definition": {
                         "separator_before": false,
                         "separator_after": false,
+                        "icon": false,
                         "label": "Go To Definition",
                         "action": function (obj) {
                             window.open('/view?q=' + node.id + '&d=true&called=' + $("input[type=checkbox][name=called]").prop("checked") + '&p=' + $('#project_select select').val(), '_blank');
@@ -511,6 +513,7 @@ function customMenu(node) {
         'view_the_file' : {
             "separator_before": false,
             "separator_after": false,
+            "icon": false,
             "label" : "View The File",
             "action" : function (obj) {
                 window.open('/project/view?q=' + node.id + '&p=' + $('#project_select select').val(), '_blank');
