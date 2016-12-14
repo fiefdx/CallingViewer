@@ -326,8 +326,7 @@ $(document).ready(function() {
             success: function(data, textStatus) {
                 if (textStatus == "success") {
                     $referrers_list.empty();
-                    console.log("getReferrers: " + data.file_path + ", project: " + data.project + ", desc: " + data.desc + ", refs: " + data.refs + ", len: " + data.refs.length);
-                    if (data.file_path && data.refs.length > 0) {
+                    if (data.refs && data.refs.length > 0) {
                         // console.log("getReferrers: " + data.file_path + ", project: " + data.project + ", desc: " + data.desc + ", refs: " + data.refs);
                         data.refs.forEach(function (value, index, array_refs) {
                             $referrers_list.append(
