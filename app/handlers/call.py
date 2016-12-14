@@ -301,6 +301,8 @@ class GoToDefinitionAjaxHandler(BaseHandler):
         projects = Projects()
         data = {}
         data["project"] = project_name
+        data["file_path"] = ""
+        data["desc"] = ""
         project = Project()
         project.parse_dict(projects.get(project_name))
         os.environ["GOPATH"] = project.go_path
@@ -309,8 +311,8 @@ class GoToDefinitionAjaxHandler(BaseHandler):
         r_json = get_definition_from_guru(file_path, line, ch)
         if r_json:
             r = json.loads(r_json)
-            data["file_path"] = r["definition"]["objpos"]
-            data["desc"] = r["definition"]["desc"]
+            data["file_path"] = r["definition"]["objpos"] if r.has_key("definition") and r["definition"].has_key("objpos") else ""
+            data["desc"] = r["definition"]["desc"] if r.has_key("definition") and r["definition"].has_key("desc") else ""
         LOG.debug("GoToDefinition: %s", data)
 
         self.write(data)
@@ -330,6 +332,9 @@ class FindReferrersAjaxHandler(BaseHandler):
         projects = Projects()
         data = {}
         data["project"] = project_name
+        data["file_path"] = ""
+        data["desc"] = ""
+        data["refs"] = []
         project = Project()
         project.parse_dict(projects.get(project_name))
         os.environ["GOPATH"] = project.go_path
@@ -338,9 +343,9 @@ class FindReferrersAjaxHandler(BaseHandler):
         r_json = get_referrers_from_guru(file_path, line, ch)
         if r_json:
             r = json.loads(r_json)
-            data["file_path"] = r["referrers"]["objpos"]
-            data["desc"] = r["referrers"]["desc"]
-            data["refs"] = r["referrers"]["refs"]
+            data["file_path"] = r["referrers"]["objpos"] if r.has_key("referrers") and r["referrers"].has_key("objpos") else ""
+            data["desc"] = r["referrers"]["desc"] if r.has_key("referrers") and r["referrers"].has_key("desc") else ""
+            data["refs"] = r["referrers"]["refs"] if r.has_key("referrers") and r["referrers"].has_key("refs") else []
         LOG.debug("FindReferrers: %s", data)
 
         self.write(data)

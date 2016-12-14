@@ -98,6 +98,24 @@ ul.items :hover {
         </div>
     </form>
 </div>
+<div id="info_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <form id="form_info" class="form-horizontal">
+        {% raw xsrf_form_html() %}
+        <div id="dialog_info" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="infoModalLabel" class="modal-title">{{_("Information")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <span class="col-xs-12"></span>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
 <div id="wait_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="waitModalLabel" aria-hidden="true">
     <form id="form_wait" class="form-horizontal">
         {% raw xsrf_form_html() %}
@@ -280,9 +298,12 @@ $(document).ready(function() {
                    "project_name": project_name},
             success: function(data, textStatus) {
                 if (textStatus == "success") {
-                    if (data.file_path) {
+                    if (data.file_path && data.file_path != "") {
                         // console.log("getDefinition: " + data.file_path + ", project: " + data.project + ", desc" + data.desc);
                         window.open('/code/view?q=' + data.file_path + '&p=' + data.project , '_blank');
+                    } else {
+                        $('#info_modal .modal-body span').text("No definition found!");
+                        $('#info_modal').modal('show');
                     }
                 }
                 $('#wait_modal').modal('hide');
@@ -305,7 +326,8 @@ $(document).ready(function() {
             success: function(data, textStatus) {
                 if (textStatus == "success") {
                     $referrers_list.empty();
-                    if (data.file_path) {
+                    console.log("getReferrers: " + data.file_path + ", project: " + data.project + ", desc: " + data.desc + ", refs: " + data.refs + ", len: " + data.refs.length);
+                    if (data.file_path && data.refs.length > 0) {
                         // console.log("getReferrers: " + data.file_path + ", project: " + data.project + ", desc: " + data.desc + ", refs: " + data.refs);
                         data.refs.forEach(function (value, index, array_refs) {
                             $referrers_list.append(
@@ -313,6 +335,9 @@ $(document).ready(function() {
                             );
                         });
                         $('#referrers_modal').modal('show');
+                    } else {
+                        $('#info_modal .modal-body span').text("No referrers found!");
+                        $('#info_modal').modal('show');
                     }
                 }
                 $('#wait_modal').modal('hide');

@@ -66,14 +66,23 @@
     margin-bottom: 20px;
 }
 
+#info_msg {
+    margin-bottom: 20px;
+}
+
 #form_reindex,
 #form_wait,
 #form_delete,
 #form_edit,
-#form_add {
+#form_add,
+#form_info {
     margin-top: 150px;
     margin-bottom: 0px; 
     padding: 0px
+}
+
+#form_info .modal-body span {
+    margin-top: -10px;
 }
 
 .modal-content {
