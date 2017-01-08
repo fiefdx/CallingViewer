@@ -11,8 +11,6 @@ import logging
 import json
 import datetime
 import time
-import dateutil
-from dateutil import tz
 
 from utils.common_utils import sha1sum
 

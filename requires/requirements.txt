@@ -6,3 +6,4 @@ toro
 whoosh
 jieba
 chardet
+pyyaml
