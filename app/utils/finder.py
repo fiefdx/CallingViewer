@@ -5,13 +5,9 @@ Created on 2016-06-24
 @author: YangHaitao
 '''
 
-import sys
 import os
 import logging
-import datetime
-import time
 import json
-from copy import deepcopy
 
 from config import CONFIG
 
@@ -129,8 +125,8 @@ class Finder(object):
 
     def find_all_relation(self, callee):
         out_name = ".called.rel" if self.called == True else ".calling.rel"
-        out_path = os.path.join(self.data_path, 
-                                "tmp", 
+        out_path = os.path.join(self.data_path,
+                                "tmp",
                                 callee.replace("/", ".").replace("*", "_") + out_name)
         self.out = open(out_path, "wb")
         self.traverse_func([callee, ""])

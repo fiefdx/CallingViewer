@@ -5,11 +5,8 @@ Created on 2016-08-01
 @author: YangHaitao
 '''
 
-import sys
 import os
 import logging
-import datetime
-import time
 import json
 import shutil
 
@@ -148,4 +145,3 @@ class Projects(object):
         with open(self.config_path, "rb") as fp:
             Projects.PROJECTS = json.loads(fp.read())
         return Projects.PROJECTS
-

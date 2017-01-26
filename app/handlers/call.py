@@ -10,11 +10,10 @@ import logging
 import json
 import re
 
-import tornado
 from tornado import gen
 
 from config import CONFIG
-from base import BaseHandler, BaseSocketHandler
+from base import BaseHandler
 from utils.finder import Finder
 from utils.search_whoosh import search_index_no_page
 from utils.index_whoosh import IX
@@ -83,7 +82,7 @@ class CallHandler(BaseHandler):
                         r_filtered.append(item)
             else:
                 r_filtered = r
-        
+
             parent_id = "%s%s%s" % (query, ID_SP, sha1sum(query.decode()))
             if r_filtered != []:
                 parent = {"id": parent_id, "parent": "#", "text": query, "type": "tree"}
@@ -235,7 +234,14 @@ class ViewHandler(BaseHandler):
                         file_path = os.path.join(CONFIG["abs_path"], file_path)
                     if os.path.exists(file_path) and os.path.isfile(file_path):
                         with open(file_path, "rb") as fp:
-                            pattern = r"func.*%s\ *\(" % q.split(".")[-1]
+                            func_name = q.split(".")[-1]
+                            object_name = q.split(".")[-2]
+                            star = "[*]" if q[:2] == "(*" else ""
+                            if len(object_name) > 0 and object_name[-1] == ")":
+                                pattern = r"func[\s]*\([\s]*.*%s[\s]*%s[\s]*\)[\s]*%s[\s]*\(" % (star, object_name[:-1], func_name)
+                            else:
+                                pattern = r"func[\s]*%s[\s]*\(" % func_name
+                            LOG.debug("pattern: %s", pattern)
                             n = 1
                             line = fp.readline()
                             while line != "":
@@ -297,7 +303,7 @@ class GoToDefinitionAjaxHandler(BaseHandler):
         line = int(line)
         ch = int(ch)
         LOG.debug("project_name: %s, q: %s, line: %s, ch: %s", project_name, query, line, ch)
-        
+
         projects = Projects()
         data = {}
         data["project"] = project_name
@@ -328,7 +334,7 @@ class FindReferrersAjaxHandler(BaseHandler):
         line = int(line)
         ch = int(ch)
         LOG.debug("project_name: %s, q: %s, line: %s, ch: %s", project_name, query, line, ch)
-        
+
         projects = Projects()
         data = {}
         data["project"] = project_name

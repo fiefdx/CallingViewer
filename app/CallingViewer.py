@@ -9,8 +9,6 @@ import os
 import os.path
 import signal
 import logging
-import socket
-import time
 
 import tornado.httpserver
 import tornado.ioloop
@@ -26,7 +24,7 @@ from app import Application
 from utils import common
 from utils.index_whoosh import IX
 from utils.async_project_import import MultiProcessProjectImport as ProjectImport
-from models.project import Project, Projects
+from models.project import Projects
 import logger
 
 cwd = os.path.split(os.path.realpath(__file__))[0]
@@ -46,14 +44,14 @@ if __name__ == "__main__":
     fp.close()
     os.environ["GOPATH"] = "%s%s" % (os.environ["GOPATH"] + ":" if os.environ.has_key("GOPATH") else "", CONFIG["go_path"])
     tornado.options.parse_command_line()
-    logger.config_logging(file_name = options.log, 
-                          log_level = CONFIG["log_level"], 
-                          dir_name = "logs", 
-                          day_rotate = False, 
-                          when = "D", 
-                          interval = 1, 
-                          max_size = 20, 
-                          backup_count = 5, 
+    logger.config_logging(file_name = options.log,
+                          log_level = CONFIG["log_level"],
+                          dir_name = "logs",
+                          day_rotate = False,
+                          when = "D",
+                          interval = 1,
+                          max_size = 20,
+                          backup_count = 5,
                           console = True)
     http_server = tornado.httpserver.HTTPServer(Application(), no_keep_alive = False)
     common.Servers.HTTP_SERVER = http_server

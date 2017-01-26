@@ -7,9 +7,6 @@ Created on 2015-01-06
 
 import tornado.web
 import logging
-import math
-import urlparse
-import urllib
 import re
 
 from config import CONFIG
@@ -50,4 +47,3 @@ class NeedJsLib(tornado.web.UIModule):
             return format_str % mode_map[mode]
         else:
             return ""
-

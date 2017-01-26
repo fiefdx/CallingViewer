@@ -5,13 +5,7 @@ Created on 2016-07-11
 @author: YangHaitao
 '''
 
-import sys
-import os
 import logging
-import datetime
-import time
-import json
-from copy import deepcopy
 
 from operator import *
 from tree_format import *

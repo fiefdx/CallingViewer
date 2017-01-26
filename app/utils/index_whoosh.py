@@ -6,21 +6,15 @@ Created on 2016-07-20
 '''
 
 import os
-import sys
 import os.path
 import time
 import logging
 import shutil
-import json
-import whoosh
+
 from whoosh import index
-from whoosh.filedb.filestore import FileStorage
-from whoosh.fields import Schema, ID, TEXT, STORED
-from whoosh.analysis import CharsetFilter, StemmingAnalyzer
-from whoosh.support.charset import accent_map
+from whoosh.fields import Schema, ID, TEXT
 from whoosh.writing import AsyncWriter
 
-import jieba
 # jieba.initialize()
 from jieba.analyse import ChineseAnalyzer
 analyzer = ChineseAnalyzer()
@@ -28,9 +22,7 @@ analyzer = ChineseAnalyzer()
 from models.item import FUNC
 from config import CONFIG
 
-
 LOG = logging.getLogger(__name__)
-
 
 class IX(object):
     IX_INDEXS = {}
@@ -107,21 +99,21 @@ def get_whoosh_index(index_path, index_name = ""):
                    }
             schema = sch[index_name]
             index_path = os.path.join(index_path, index_name)
-            LOG.debug("Index path: %s" % index_path)
+            LOG.debug("Index path: %s", index_path)
             if not os.path.exists(index_path):
                 os.makedirs(index_path)
                 ix = index.create_in(index_path, schema = schema, indexname = index_name)
-                LOG.debug("Create index[%s, %s]" % (index_path, index_name))
+                LOG.debug("Create index[%s, %s]", index_path, index_name)
                 result = ix
             else:
                 flag = index.exists_in(index_path, indexname = index_name)
                 if flag == True:
                     ix = index.open_dir(index_path, indexname = index_name)
-                    LOG.debug("Open index[%s, %s]" % (index_path, index_name))
+                    LOG.debug("Open index[%s, %s]", index_path, index_name)
                     result = ix
                 else:
                     ix = index.create_in(index_path, schema = schema, indexname = index_name)
-                    LOG.debug("Create index[%s, %s]" % (index_path, index_name))
+                    LOG.debug("Create index[%s, %s]", index_path, index_name)
                     result = ix
         else:
             LOG.warning("Lost index name, so return None!")
@@ -145,10 +137,10 @@ def update_whoosh_index_doc_num(index, item_iter, item_num, index_name, merge = 
                                                name = item.name)
                     else:
                         LOG.error("index_name error: in the update_whoosh_index_doc_num!")
-                    LOG.debug("Update index[%s] doc_id[%s]"%(index_name, item.id))
+                    LOG.debug("Update index[%s] doc_id[%s]", index_name, item.id)
                     if n == item_num:
                         writer.commit(merge = merge)
-                        LOG.info("Commit index[%s] success."%index_name)
+                        LOG.info("Commit index[%s] success.", index_name)
                         # writer = index.writer()
                         writer = AsyncWriter(index)
                         n = 0
@@ -157,7 +149,7 @@ def update_whoosh_index_doc_num(index, item_iter, item_num, index_name, merge = 
                     writer.commit(merge = merge)
                     ss = time.time()
                     LOG.debug("Commit use %ss", ss - s)
-                    LOG.info("Commit index[%s] success."%index_name)
+                    LOG.info("Commit index[%s] success.", index_name)
                 result = True
             except Exception, e:
                 LOG.exception(e)

@@ -28,7 +28,7 @@ def is_browser(headers):
     if headers.has_key("User-Agent"):
         user_agent = headers["User-Agent"].lower()
     LOG.debug("User-Agent: %s", user_agent)
-    if user_agent and ("mozilla" in user_agent or "chromium" in user_agent 
+    if user_agent and ("mozilla" in user_agent or "chromium" in user_agent
        or "chrome" in user_agent or "safari" in user_agent):
         result = "browser"
     elif user_agent and ("curl" in user_agent):
@@ -78,7 +78,7 @@ def get_file_size_gb(file_path):
 
 
 def shutdown():
-    LOG.info("Stopping Server(%s:%s)", CONFIG["server_host"], 
+    LOG.info("Stopping Server(%s:%s)", CONFIG["server_host"],
                                        CONFIG["server_port"])
     if Servers.HTTP_SERVER:
         Servers.HTTP_SERVER.stop()
@@ -92,14 +92,14 @@ def shutdown():
     LOG.info("Will shutdown in %s seconds ...", MAX_WAIT_SECONDS_BEFORE_SHUTDOWN)
     io_loop = tornado.ioloop.IOLoop.instance()
     deadline = time.time() + MAX_WAIT_SECONDS_BEFORE_SHUTDOWN
- 
+
     def stop_loop():
         now = time.time()
         if now < deadline and (io_loop._callbacks or io_loop._timeouts):
             io_loop.add_timeout(now + 1, stop_loop)
         else:
             io_loop.stop()
-            LOG.info("Server(%s:%s) Shutdown!", CONFIG["server_host"], 
+            LOG.info("Server(%s:%s) Shutdown!", CONFIG["server_host"],
                                                 CONFIG["server_port"])
 
     stop_loop()

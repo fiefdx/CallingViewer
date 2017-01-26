@@ -5,12 +5,7 @@ Created on 2016-07-20
 @author: YangHaitao
 '''
 
-import os
-import sys
 import logging
-import json
-import datetime
-import time
 
 from utils.common_utils import sha1sum
 
@@ -23,7 +18,7 @@ class FUNC(object):
     def __str__(self):
         string_formated = "id: %(id)d\n" \
                           "name: %(name)s\n" \
-                          %(self.to_dict())
+                          % (self.to_dict())
         return string_formated
 
     def parse_dict(self, source):

@@ -8,18 +8,15 @@ Created on 2016-08-02
 import os
 import logging
 import json
-import re
 
-import tornado
 from tornado import gen
 import chardet
 
 from config import CONFIG
-from base import BaseHandler, BaseSocketHandler
-from utils.finder import Finder
+from base import BaseHandler
 from utils.index_whoosh import IX
 from utils.async_project_import import MultiProcessProjectImport as ProjectImport
-from utils.common_utils import sha1sum, escape_html, get_mode
+from utils.common_utils import get_mode
 from models.project import Project, Projects
 
 LOG = logging.getLogger(__name__)

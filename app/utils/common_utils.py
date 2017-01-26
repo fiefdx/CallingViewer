@@ -3,21 +3,13 @@
 Created on 2016-07-20
 @summary:  some utils
 @author: YangHaitao
-''' 
+'''
 
-import sys
 import os
-import re
-import getopt
 import logging
-import shutil
-import datetime
 import time
 import hashlib
-import subprocess
 from subprocess import Popen, PIPE
-
-from config import CONFIG
 
 LOG = logging.getLogger(__name__)
 
@@ -193,10 +185,10 @@ def listdir(dir_path = ".", sort_by = "name", desc = False):
         for d in dirs_list:
             d_path = os.path.join(dir_path, d)
             dirs.append({
-                "num":n, 
-                "name":d, 
-                "sha1":sha1sum(d_path), 
-                "type":"Directory", 
+                "num":n,
+                "name":d,
+                "sha1":sha1sum(d_path),
+                "type":"Directory",
                 "size":os.path.getsize(d_path),
                 "ctime":time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getctime(d_path))),
                 "mtime":time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(d_path)))
@@ -205,10 +197,10 @@ def listdir(dir_path = ".", sort_by = "name", desc = False):
         for f in files_list:
             f_path = os.path.join(dir_path, f)
             files.append({
-                "num":n, 
-                "name":f, 
-                "sha1":sha1sum(f_path), 
-                "type":os.path.splitext(f)[-1], 
+                "num":n,
+                "name":f,
+                "sha1":sha1sum(f_path),
+                "type":os.path.splitext(f)[-1],
                 "size":os.path.getsize(f_path),
                 "ctime":time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getctime(f_path))),
                 "mtime":time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(f_path)))

@@ -6,29 +6,21 @@ Created on 2016-08-06
 '''
 
 import os
-import sys
 import shutil
 import logging
-import json
 import time
-import signal
 import binascii
-import hashlib
-import datetime
-import time
 from time import localtime, strftime
 from multiprocessing import Process, Pipe
 
-import tornado
 from tornado import gen
-from tornado.ioloop import IOLoop
 import toro
 
 from config import CONFIG
 from utils.finder import Finder
 from utils import common_utils
 from utils.index_whoosh import IX, index_all_func
-from models.project import Project, Projects
+from models.project import Projects
 import logger
 
 LOG = logging.getLogger(__name__)
@@ -56,14 +48,14 @@ class ProjectImportProcess(Process):
 
     def run(self):
         date_time = strftime("%Y%m%d_%H%M%S", localtime())
-        logger.config_logging(file_name = ("project_import_%s_" % self.process_id + '.log'), 
-                              log_level = CONFIG['log_level'], 
-                              dir_name = "logs", 
-                              day_rotate = False, 
-                              when = "D", 
-                              interval = 1, 
-                              max_size = 20, 
-                              backup_count = 5, 
+        logger.config_logging(file_name = ("project_import_%s_" % self.process_id + '.log'),
+                              log_level = CONFIG['log_level'],
+                              dir_name = "logs",
+                              day_rotate = False,
+                              when = "D",
+                              interval = 1,
+                              max_size = 20,
+                              backup_count = 5,
                               console = True)
         LOG.info("Start ProjectImportProcess(%s)", self.process_id)
         try:
