@@ -41,7 +41,9 @@ class NeedJsLib(tornado.web.UIModule):
                     "application/json": "javascript/javascript",
                     "text/x-sql": "sql/sql",
                     "text/x-yaml": "yaml/yaml",
-                    "text/x-toml": "toml/toml"}
+                    "text/x-toml": "toml/toml",
+                    "text/x-markdown": "markdown/markdown",
+                    "text/x-lua": "lua/lua"}
         format_str = '''<script src="/static/js/codemirror/mode/%s.js"></script>'''
         if mode in mode_map:
             return format_str % mode_map[mode]

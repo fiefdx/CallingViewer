@@ -217,7 +217,10 @@ def get_mode(ext):
                 ".cpy": "text/x-cython",
                 ".java": "text/x-java:",
                 ".cc": "text/x-c++src",
+                ".hpp": "text/x-c++src",
+                ".cpp": "text/x-c++src",
                 ".c": "text/x-csrc",
+                ".h": "text/x-csrc",
                 ".css": "text/x-scss",
                 ".sh": "text/x-sh",
                 ".js": "text/javascript",
@@ -226,7 +229,9 @@ def get_mode(ext):
                 ".json": "application/json",
                 ".sql": "text/x-sql",
                 ".yml": "text/x-yaml",
-                ".toml": "text/x-toml"}
+                ".toml": "text/x-toml",
+                ".md": "text/x-markdown",
+                ".lua": "text/x-lua"}
     if ext.lower() in mode_map:
         return mode_map[ext]
     else:
