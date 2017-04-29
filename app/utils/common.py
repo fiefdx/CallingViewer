@@ -88,7 +88,7 @@ def shutdown():
         LOG.info("Stop ix server!")
     if Servers.PROJECT_SERVER:
         Servers.PROJECT_SERVER.close()
-        LOG.info("Stop POSTER!")
+        LOG.info("Stop project server!")
     LOG.info("Will shutdown in %s seconds ...", MAX_WAIT_SECONDS_BEFORE_SHUTDOWN)
     io_loop = tornado.ioloop.IOLoop.instance()
     deadline = time.time() + MAX_WAIT_SECONDS_BEFORE_SHUTDOWN

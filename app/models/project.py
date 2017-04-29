@@ -140,6 +140,16 @@ class Projects(object):
             LOG.exception(e)
         return result
 
+    def exist(self, project_name):
+        self.__init()
+        result = False
+        try:
+            if Projects.PROJECTS.has_key(project_name):
+                result = True
+        except Exception, e:
+            LOG.exception(e)
+        return result
+
     def all(self):
         self.__init()
         with open(self.config_path, "rb") as fp:

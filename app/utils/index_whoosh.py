@@ -191,9 +191,9 @@ def index_all_func(db, ix, name = "call", bulk = 10000, merge = False):
         flag = update_whoosh_index_doc_num(ix, func_iter(db), bulk, name, merge = False)
         if flag:
             LOG.debug("Index %s success", name)
+            result = True
         else:
             LOG.debug("Index %s failed", name)
-        result = True
     except Exception, e:
         LOG.exception(e)
     return result

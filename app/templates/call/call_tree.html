@@ -226,6 +226,60 @@ body {
         </div>
     </form>
 </div>
+<div id="operation_fail_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="operationFailModalLabel" aria-hidden="true">
+    <form id="form_operation_fail" class="form-horizontal">
+        {% raw xsrf_form_html() %}
+        <div id="dialog_operation_fail" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="failModalLabel" class="modal-title">{{_("Error")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <span class="col-xs-12">{{_("Operation failed, see log to get the detail information!")}}</span>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="project_exist_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="projectExistModalLabel" aria-hidden="true">
+    <form id="form_project_exist" class="form-horizontal">
+        {% raw xsrf_form_html() %}
+        <div id="dialog_project_exist" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="existModalLabel" class="modal-title">{{_("Warning")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <span class="col-xs-12">{{_("The project name already exist, please try another one!")}}</span>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="invalid_params_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="invalidParamsModalLabel" aria-hidden="true">
+    <form id="form_invalid_params" class="form-horizontal">
+        {% raw xsrf_form_html() %}
+        <div id="dialog_invalid_params" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="paramsModalLabel" class="modal-title">{{_("Error")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <span class="col-xs-12">{{_("The project's configuration error, please validate project name, project path, go path and main path!")}}</span>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
 {% end %}
 
 {% block javascript %}
@@ -540,43 +594,41 @@ function createProjectNode(parent_node, new_node_id, new_node_text, position, ty
 
 function changeProject() {
     var selected_project = $('#project_select select').val();
-    if (current_project != selected_project) {
-        var ajax_url = "/select/project";
-        $.ajax({
-            type: "post",
-            async: false,
-            url: ajax_url,
-            data: {"project_name": selected_project},
-            success: function(data, textStatus) {
-                if(textStatus == "success") {
-                    $('#project_tree').jstree().delete_node($('#project_tree').jstree().get_json());
-                    if (data.nodes) {
-                        data.nodes.forEach(function (value, index, array_notes) {
-                            createProjectNode(value.parent, value.id, value.text, "last", value.type);
-                        });
-                    }
+    var ajax_url = "/select/project";
+    $.ajax({
+        type: "post",
+        async: false,
+        url: ajax_url,
+        data: {"project_name": selected_project},
+        success: function(data, textStatus) {
+            if(textStatus == "success") {
+                $('#project_tree').jstree().delete_node($('#project_tree').jstree().get_json());
+                if (data.nodes) {
+                    data.nodes.forEach(function (value, index, array_notes) {
+                        createProjectNode(value.parent, value.id, value.text, "last", value.type);
+                    });
+                }
 
-                    if (data.project) {
-                        $('#project_select select').val(data.project);
-                        current_project = data.project;
-                        project_name = data.project;
-                    }
+                if (data.project) {
+                    $('#project_select select').val(data.project);
+                    current_project = data.project;
+                    project_name = data.project;
+                }
 
-                    if (data.project_path) {
-                        project_path = data.project_path;
-                    }
+                if (data.project_path) {
+                    project_path = data.project_path;
+                }
 
-                    if (data.main_path) {
-                        main_path = data.main_path;
-                    }
+                if (data.main_path) {
+                    main_path = data.main_path;
+                }
 
-                    if (data.go_path) {
-                        go_path = data.go_path;
-                    }
+                if (data.go_path) {
+                    go_path = data.go_path;
                 }
             }
-        });
-    }
+        }
+    });
     $('#project_select select').blur();
 }
 
@@ -600,7 +652,7 @@ function addProject() {
                "go_path": $("#add_project_modal input#go_path").val(),
                "main_path": $("#add_project_modal input#main_path").val()},
         success: function(data, textStatus) {
-            if(textStatus == "success") {
+            if(textStatus == "success" && !data.exception) {
                 $('#project_tree').jstree().delete_node($('#project_tree').jstree().get_json());
                 if (data.nodes) {
                     data.nodes.forEach(function (value, index, array_notes) {
@@ -636,6 +688,14 @@ function addProject() {
                 }
             }
             $('#wait_add_project_modal').modal('hide');
+
+            if (data.exception && data.exception == "ExistProjectError") {
+                $('#project_exist_modal').modal('show');
+            } else if (data.exception && data.exception == "InvalidParamsError") {
+                $('#invalid_params_modal').modal('show');
+            } else if (data.exception) {
+                $('#operation_fail_modal').modal('show');
+            }
         }
     });
 }
@@ -660,7 +720,7 @@ function editProject() {
                "go_path": $("#edit_project_modal input#go_path").val(),
                "main_path": $("#edit_project_modal input#main_path").val()},
         success: function(data, textStatus) {
-            if(textStatus == "success") {
+            if(textStatus == "success" && !data.exception) {
                 $('#project_tree').jstree().delete_node($('#project_tree').jstree().get_json());
                 if (data.nodes) {
                     data.nodes.forEach(function (value, index, array_notes) {
@@ -696,6 +756,12 @@ function editProject() {
                 }
             }
             $('#wait_reindex_project_modal').modal('hide');
+
+            if (data.exception && data.exception == "InvalidParamsError") {
+                $('#invalid_params_modal').modal('show');
+            } else if (data.exception) {
+                $('#operation_fail_modal').modal('show');
+            }
         }
     });
 }
@@ -713,7 +779,7 @@ function delProject() {
         url: ajax_url,
         data: {"project_name": selected_project},
         success: function(data, textStatus) {
-            if(textStatus == "success") {
+            if(textStatus == "success" && !data.exception) {
                 $('#project_tree').jstree().delete_node($('#project_tree').jstree().get_json());
                 if (data.nodes) {
                     data.nodes.forEach(function (value, index, array_notes) {
@@ -752,6 +818,10 @@ function delProject() {
                     go_path = data.go_path;
                 }
             }
+
+            if (data.exception) {
+                $('#operation_fail_modal').modal('show');
+            }
         }
     });
 }
@@ -769,7 +839,7 @@ function reindexProject() {
         url: ajax_url,
         data: {"project_name": $('#project_select select').val()},
         success: function(data, textStatus) {
-            if(textStatus == "success") {
+            if(textStatus == "success" && !data.exception) {
                 $('#call_tree').jstree().delete_node($('#call_tree').jstree().get_json());
 
                 if (data.project) {
@@ -778,6 +848,10 @@ function reindexProject() {
                 }
             }
             $('#wait_reindex_project_modal').modal('hide');
+
+            if (data.exception) {
+                $('#operation_fail_modal').modal('show');
+            }
         }
     });
 }

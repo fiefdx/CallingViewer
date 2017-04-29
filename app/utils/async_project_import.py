@@ -70,7 +70,7 @@ class ProjectImportProcess(Process):
 
                         data_path = os.path.join(CONFIG["data_path"], "projects", project.project_name)
                         flag = common_utils.make_callgraph_data(project.main_path, os.path.join(data_path, "data.callgraph"))
-                        if flag == True:
+                        if flag is True:
                             LOG.debug("generate data.callgraph success")
                             db_path = os.path.join(data_path, "table_calling.db")
                             if os.path.exists(db_path) and os.path.isdir(db_path):
@@ -91,13 +91,14 @@ class ProjectImportProcess(Process):
                             projects = Projects()
                             ix = IX(projects = [v for v in projects.all().itervalues()])
                             LOG.debug("IX: %s", IX.IX_INDEXS)
-                            index_all_func(db = finder.db, ix = ix.get(project.project_name))
-                            finder = Finder(data_path, called = False)
-                            finder.build_finder()
-                            index_all_func(db = finder.db, ix = ix.get(project.project_name))
+                            flag = index_all_func(db = finder.db, ix = ix.get(project.project_name))
+                            if flag is True:
+                                finder = Finder(data_path, called = False)
+                                finder.build_finder()
+                                flag = index_all_func(db = finder.db, ix = ix.get(project.project_name))
                         else:
                             LOG.error("Create data.callgraph failed!")
-                        if flag == True:
+                        if flag is True:
                             self.pipe_client.send((command, True))
                         else:
                             self.pipe_client.send((command, False))
