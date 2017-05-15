@@ -121,3 +121,13 @@
     widows: 800px;
     height: 400px;
 }
+
+span.node-name {
+    color: #212121;
+}
+
+span.node-line-num {
+    margin-left: 5px;
+    color: #3e94cf;
+    font-size: 12px;
+}

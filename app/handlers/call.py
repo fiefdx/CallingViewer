@@ -94,12 +94,18 @@ class CallHandler(BaseHandler):
                 else:
                     child_id = "%s%s%s%s%s" % (query, ID_SP, item[0], ID_SP, item[1])
                     child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
+                    line_num = item[1].split(":")[-1]
+                    if line_num == "" or not line_num.isdigit():
+                        line_num = 0
+                    else:
+                        line_num = int(line_num)
                     tree.append({"id": child_id,
                                  "parent": parent_id,
+                                 "num": line_num,
                                  "text": escape_html(item[0]),
                                  "type": "leaf"})
 
-            tree.sort(lambda x,y : cmp(x['text'], y['text']))
+            tree.sort(lambda x,y : cmp(x['num'], y['num']))
             tree.insert(0, parent)
         LOG.debug("tree: %s", tree)
         data = {}
@@ -144,12 +150,18 @@ class CallAjaxHandler(BaseHandler):
                     else:
                         child_id = "%s%s%s%s%s" % (q, ID_SP, item[0], ID_SP, item[1])
                         child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
+                        line_num = item[1].split(":")[-1]
+                        if line_num == "" or not line_num.isdigit():
+                            line_num = 0
+                        else:
+                            line_num = int(line_num)
                         nodes.append({"id": child_id,
                                       "parent": q_id,
+                                      "num": line_num,
                                       "text": escape_html(item[0]),
                                       "type": "leaf"})
 
-        nodes.sort(lambda x,y : cmp(x['text'], y['text']))
+        nodes.sort(lambda x,y : cmp(x['num'], y['num']))
         LOG.debug("tree: %s", tree)
         data = {}
         data["nodes"] = nodes

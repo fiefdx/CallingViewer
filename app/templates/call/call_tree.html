@@ -435,6 +435,12 @@ $(document).ready(function(){
         go_path = data.go_path;
     }
 
+    if (data.nodes) {
+        data.nodes.forEach(function (value, index, array_notes) {
+            data.nodes[index].text = '<span class="node-name">' + value.text + '</span>';
+        });
+    }
+
     var r_datas = new Bloodhound({
         datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.string); },
         queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -548,7 +554,7 @@ $(document).ready(function(){
                     $('#call_tree').jstree(true).set_type(value.parent, "loop");
                     $('#call_tree').jstree(true).set_type(value.id, "loop");
                 } else {
-                    createNode(value.parent, value.id, value.text, "last", value.type);
+                    createNode(value.parent, value.id, value.text, value.num, "last", value.type);
                 }
             });
             // $('#call_tree').jstree(true).refresh_node(data.node);
@@ -584,11 +590,17 @@ function customMenu(node) {
 
 // Helper method createNode(parent, id, text, position).
 // Dynamically adds nodes to the jsTree. Position can be 'first' or 'last'.
-function createNode(parent_node, new_node_id, new_node_text, position, type) {
+function createNode(parent_node, new_node_id, new_node_text, new_node_num, position, type) {
+    if (new_node_num && new_node_num >= 0) {
+        new_node_text = '<span class="node-name">' + new_node_text + '</span>' + '<span class="node-line-num">:' + new_node_num + '</span>';
+    } else {
+        new_node_text = '<span class="node-name">' + new_node_text + '</span>';
+    }
     $('#call_tree').jstree(true).create_node(parent_node, { "text":new_node_text, "id":new_node_id, "type": type }, position, null, false);
 }
 
 function createProjectNode(parent_node, new_node_id, new_node_text, position, type) {
+    new_node_text = '<span class="node-name">' + new_node_text + '</span>';
     $('#project_tree').jstree(true).create_node(parent_node, { "text":new_node_text, "id":new_node_id, "type": type }, position, null, false);
 }
 
@@ -871,7 +883,7 @@ function search() {
                 if (data.tree && data.query) {
                     $('#call_tree').jstree().delete_node($('#call_tree').jstree().get_json());
                     data.tree.forEach(function (value, index, array_notes) {
-                        createNode(value.parent, value.id, value.text, "last", value.type);
+                        createNode(value.parent, value.id, value.text, value.num, "last", value.type);
                     });
                     if (data.query) {
                         $("#search_input").val(data.query);
