@@ -92,6 +92,10 @@
     width: 700px;
 }
 
+div#dialog_referrers {
+    width: 1000px;
+}
+
 .modal-content {
     text-align: center;
 }
