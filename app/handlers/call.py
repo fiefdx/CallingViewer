@@ -17,7 +17,7 @@ from base import BaseHandler
 from utils.finder import Finder
 from utils.search_whoosh import search_index_no_page
 from utils.index_whoosh import IX
-from utils.common_utils import sha1sum, escape_html, get_mode, get_definition_from_guru, get_referrers_from_guru
+from utils.common_utils import sha1sum, escape_html, get_mode, get_definition_from_guru, get_referrers_from_guru, compare_node
 from models.project import Project, Projects
 
 LOG = logging.getLogger(__name__)
@@ -94,18 +94,23 @@ class CallHandler(BaseHandler):
                 else:
                     child_id = "%s%s%s%s%s" % (query, ID_SP, item[0], ID_SP, item[1])
                     child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
-                    line_num = item[1].split(":")[-1]
-                    if line_num == "" or not line_num.isdigit():
-                        line_num = 0
-                    else:
-                        line_num = int(line_num)
+                    item_parts = item[1].split(":")
+                    src_file = ""
+                    line_num = ""
+                    if len(item_parts) == 2:
+                        src_file, line_num = item_parts
+                    elif len(item_parts) == 1:
+                        src_file = item_parts[0]
+                        line_num = ""
+                    line_num = int(line_num) if line_num != "" and line_num.isdigit() else 0
                     tree.append({"id": child_id,
                                  "parent": parent_id,
+                                 "src_file": src_file,
                                  "num": line_num,
                                  "text": escape_html(item[0]),
                                  "type": "leaf"})
 
-            tree.sort(lambda x,y : cmp(x['num'], y['num']))
+            tree.sort(compare_node)
             tree.insert(0, parent)
         LOG.debug("tree: %s", tree)
         data = {}
@@ -150,18 +155,23 @@ class CallAjaxHandler(BaseHandler):
                     else:
                         child_id = "%s%s%s%s%s" % (q, ID_SP, item[0], ID_SP, item[1])
                         child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
-                        line_num = item[1].split(":")[-1]
-                        if line_num == "" or not line_num.isdigit():
-                            line_num = 0
-                        else:
-                            line_num = int(line_num)
+                        item_parts = item[1].split(":")
+                        src_file = ""
+                        line_num = ""
+                        if len(item_parts) == 2:
+                            src_file, line_num = item_parts
+                        elif len(item_parts) == 1:
+                            src_file = item_parts[0]
+                            line_num = ""
+                        line_num = int(line_num) if line_num != "" and line_num.isdigit() else 0
                         nodes.append({"id": child_id,
                                       "parent": q_id,
+                                      "src_file": src_file,
                                       "num": line_num,
                                       "text": escape_html(item[0]),
                                       "type": "leaf"})
 
-        nodes.sort(lambda x,y : cmp(x['num'], y['num']))
+        nodes.sort(compare_node)
         LOG.debug("tree: %s", tree)
         data = {}
         data["nodes"] = nodes

@@ -236,3 +236,10 @@ def get_mode(ext):
         return mode_map[ext]
     else:
         return ""
+
+def compare_node(n0, n1):
+    src_file_cmp = cmp(n0["src_file"], n1["src_file"])
+    if src_file_cmp != 0:
+        return src_file_cmp
+    else:
+        return cmp(n0["num"], n1["num"])
