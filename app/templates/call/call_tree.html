@@ -377,7 +377,16 @@ function get_project_leaf(q) {
 };
 
 function include(arr, obj) {
-    return (arr.indexOf(obj) != -1);
+    for (i = 0; i < arr.length; i++) {
+        if (arr[i].indexOf(obj) != -1) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function includeStr(str, flag) {
+    return str.indexOf(flag);
 }
 
 var project_view_width = 255;
@@ -547,14 +556,23 @@ $(document).ready(function(){
         if (r.flag) {
             r.tree.forEach(function (value, index, array_notes) {
                 $('#call_tree').jstree(true).set_type(value.id, "tree");
+                if (value.size && value.size >= 0) {
+                    text = $('#call_tree').jstree(true).get_text(value.id);
+                    if (includeStr(text, "node-children-num") == -1) {
+                        text = text + '<span class="node-children-num">[' + value.size + ']</span>';
+                        $('#call_tree').jstree(true).rename_node(value.id, text);
+                    }
+                }
             });
             r.nodes.forEach(function (value, index, array_notes) {
                 var path = $('#call_tree').jstree(true).get_path($('#call_tree').jstree(true).get_node(value.parent));
-                if (include(path, value.text)) {
-                    $('#call_tree').jstree(true).set_type(value.parent, "loop");
+                var path_ids = $('#call_tree').jstree(true).get_path($('#call_tree').jstree(true).get_node(value.parent), null, true);
+                index = include(path, value.text);
+                if (index != -1) {
+                    $('#call_tree').jstree(true).set_type(path_ids[index], "loop");
                     $('#call_tree').jstree(true).set_type(value.id, "loop");
                 } else {
-                    createNode(value.parent, value.id, value.text, value.num, "last", value.type);
+                    createNode(value.parent, value.id, value.text, value.num, value.size, "last", value.type);
                 }
             });
             // $('#call_tree').jstree(true).refresh_node(data.node);
@@ -590,11 +608,13 @@ function customMenu(node) {
 
 // Helper method createNode(parent, id, text, position).
 // Dynamically adds nodes to the jsTree. Position can be 'first' or 'last'.
-function createNode(parent_node, new_node_id, new_node_text, new_node_num, position, type) {
+function createNode(parent_node, new_node_id, new_node_text, new_node_num, new_node_size, position, type) {
+    new_node_text = '<span class="node-name">' + new_node_text + '</span>';
     if (new_node_num && new_node_num >= 0) {
-        new_node_text = '<span class="node-name">' + new_node_text + '</span>' + '<span class="node-line-num">:' + new_node_num + '</span>';
-    } else {
-        new_node_text = '<span class="node-name">' + new_node_text + '</span>';
+        new_node_text = new_node_text + '<span class="node-line-num">:' + new_node_num + '</span>';
+    }
+    if (new_node_size && new_node_size >= 0) {
+        new_node_text = new_node_text + '<span class="node-children-num">[' + new_node_size + ']</span>';
     }
     $('#call_tree').jstree(true).create_node(parent_node, { "text":new_node_text, "id":new_node_id, "type": type }, position, null, false);
 }
@@ -883,7 +903,25 @@ function search() {
                 if (data.tree && data.query) {
                     $('#call_tree').jstree().delete_node($('#call_tree').jstree().get_json());
                     data.tree.forEach(function (value, index, array_notes) {
-                        createNode(value.parent, value.id, value.text, value.num, "last", value.type);
+                        createNode(value.parent, value.id, value.text, value.num, value.size, "last", value.type);
+                        if (value.size && value.size >= 0) {
+                            text = $('#call_tree').jstree(true).get_text(value.id);
+                            if (includeStr(text, "node-children-num") == -1) {
+                                text = text + '<span class="node-children-num">[' + value.size + ']</span>';
+                                $('#call_tree').jstree(true).rename_node(value.id, text);
+                            }
+                        }
+                    });
+                    data.nodes.forEach(function (value, index, array_notes) {
+                        var path = $('#call_tree').jstree(true).get_path($('#call_tree').jstree(true).get_node(value.parent));
+                        var path_ids = $('#call_tree').jstree(true).get_path($('#call_tree').jstree(true).get_node(value.parent), null, true);
+                        index = include(path, value.text);
+                        if (index != -1) {
+                            $('#call_tree').jstree(true).set_type(path_ids[index], "loop");
+                            $('#call_tree').jstree(true).set_type(value.id, "loop");
+                        } else {
+                            createNode(value.parent, value.id, value.text, value.num, value.size, "last", value.type);
+                        }
                     });
                     if (data.query) {
                         $("#search_input").val(data.query);

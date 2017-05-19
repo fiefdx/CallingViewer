@@ -74,6 +74,7 @@ class CallHandler(BaseHandler):
         r = finder.find(query)
 
         r_filtered = []
+        nodes = []
         tree = []
         if r != None and r != False:
             if filter_str != "":
@@ -89,32 +90,30 @@ class CallHandler(BaseHandler):
             else:
                 parent = {"id": parent_id, "parent": "#", "text": query, "type": "leaf"}
             for item in r_filtered:
-                if item[0] == query:
-                    pass
-                else:
-                    child_id = "%s%s%s%s%s" % (query, ID_SP, item[0], ID_SP, item[1])
-                    child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
-                    item_parts = item[1].split(":")
-                    src_file = ""
+                child_id = "%s%s%s%s%s" % (query, ID_SP, item[0], ID_SP, item[1])
+                child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
+                item_parts = item[1].split(":")
+                src_file = ""
+                line_num = ""
+                if len(item_parts) == 2:
+                    src_file, line_num = item_parts
+                elif len(item_parts) == 1:
+                    src_file = item_parts[0]
                     line_num = ""
-                    if len(item_parts) == 2:
-                        src_file, line_num = item_parts
-                    elif len(item_parts) == 1:
-                        src_file = item_parts[0]
-                        line_num = ""
-                    line_num = int(line_num) if line_num != "" and line_num.isdigit() else 0
-                    tree.append({"id": child_id,
-                                 "parent": parent_id,
-                                 "src_file": src_file,
-                                 "num": line_num,
-                                 "text": escape_html(item[0]),
-                                 "type": "leaf"})
-
-            tree.sort(compare_node)
-            tree.insert(0, parent)
+                line_num = int(line_num) if line_num != "" and line_num.isdigit() else 0
+                nodes.append({"id": child_id,
+                              "parent": parent_id,
+                              "src_file": src_file,
+                              "num": line_num,
+                              "text": escape_html(item[0]),
+                              "type": "leaf"})
+            parent["size"] = len(nodes)
+            tree.append(parent)
+            nodes.sort(compare_node)
         LOG.debug("tree: %s", tree)
         data = {}
         data["query"] = query
+        data["nodes"] = nodes
         data["tree"] = tree
         data["called"] = called
         data["filter"] = filter_str
@@ -146,33 +145,32 @@ class CallAjaxHandler(BaseHandler):
                             r_filtered.append(item)
                 else:
                     r_filtered = r
-
-                if r_filtered != []:
-                    tree.append({"id": q_id})
+                size = 0
                 for item in r_filtered:
-                    if item[0] == q:
-                        pass
-                    else:
-                        child_id = "%s%s%s%s%s" % (q, ID_SP, item[0], ID_SP, item[1])
-                        child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
-                        item_parts = item[1].split(":")
-                        src_file = ""
+                    size += 1
+                    child_id = "%s%s%s%s%s" % (q, ID_SP, item[0], ID_SP, item[1])
+                    child_id = "%s%s%s" % (child_id, ID_SP, sha1sum(child_id.decode()))
+                    item_parts = item[1].split(":")
+                    src_file = ""
+                    line_num = ""
+                    if len(item_parts) == 2:
+                        src_file, line_num = item_parts
+                    elif len(item_parts) == 1:
+                        src_file = item_parts[0]
                         line_num = ""
-                        if len(item_parts) == 2:
-                            src_file, line_num = item_parts
-                        elif len(item_parts) == 1:
-                            src_file = item_parts[0]
-                            line_num = ""
-                        line_num = int(line_num) if line_num != "" and line_num.isdigit() else 0
-                        nodes.append({"id": child_id,
-                                      "parent": q_id,
-                                      "src_file": src_file,
-                                      "num": line_num,
-                                      "text": escape_html(item[0]),
-                                      "type": "leaf"})
+                    line_num = int(line_num) if line_num != "" and line_num.isdigit() else 0
+                    nodes.append({"id": child_id,
+                                  "parent": q_id,
+                                  "src_file": src_file,
+                                  "num": line_num,
+                                  "text": escape_html(item[0]),
+                                  "type": "leaf"})
+                if r_filtered != []:
+                    tree.append({"id": q_id, "size": size})
 
         nodes.sort(compare_node)
         LOG.debug("tree: %s", tree)
+        # LOG.debug("nodes: %s", nodes)
         data = {}
         data["nodes"] = nodes
         data["tree"] = tree

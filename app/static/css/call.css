@@ -135,3 +135,9 @@ span.node-line-num {
     color: #3e94cf;
     font-size: 12px;
 }
+
+span.node-children-num {
+    margin-left: 5px;
+    color: #4aa564;
+    font-size: 12px;
+}
