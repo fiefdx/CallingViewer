@@ -52,7 +52,9 @@ class ProjectAjaxAddHandler(BaseHandler):
         try:
             project_name = self.get_argument("project_name", "").strip()
             project_path = self.get_argument("project_path", "").strip()
+            project_path = project_path.rstrip("/") if project_path != "/" else "/"
             go_path = self.get_argument("go_path", "").strip()
+            go_path = go_path.rstrip("/") if go_path != "/" else "/"
             main_path = self.get_argument("main_path", "").strip()
 
             LOG.debug("add project: project_name %s, project_path: %s, go_path: %s, main_path: %s", project_name, project_path, go_path, main_path)
@@ -281,7 +283,9 @@ class ProjectAjaxEditHandler(BaseHandler):
         try:
             project_name = self.get_argument("project_name", "").strip()
             project_path = self.get_argument("project_path", "").strip()
+            project_path = project_path.rstrip("/") if project_path != "/" else "/"
             go_path = self.get_argument("go_path", "").strip()
+            go_path = go_path.rstrip("/") if go_path != "/" else "/"
             main_path = self.get_argument("main_path", "").strip()
 
             LOG.debug("edit project: project_name %s, project_path: %s, go_path: %s, main_path: %s", project_name, project_path, go_path, main_path)
