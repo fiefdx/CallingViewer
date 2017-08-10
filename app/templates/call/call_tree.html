@@ -554,7 +554,7 @@ $(document).ready(function(){
     $('#call_tree').on('before_open.jstree', function(e, data) {
         r = get_leaf(data.node.children);
         if (r.flag) {
-            r.tree.forEach(function (value, index, array_notes) {
+            r.tree.forEach(function (value, index, array_nodes) {
                 $('#call_tree').jstree(true).set_type(value.id, "tree");
                 if (value.size && value.size >= 0) {
                     text = $('#call_tree').jstree(true).get_text(value.id);
@@ -564,18 +564,23 @@ $(document).ready(function(){
                     }
                 }
             });
-            r.nodes.forEach(function (value, index, array_notes) {
-                var path = $('#call_tree').jstree(true).get_path($('#call_tree').jstree(true).get_node(value.parent));
-                var path_ids = $('#call_tree').jstree(true).get_path($('#call_tree').jstree(true).get_node(value.parent), null, true);
+            r.nodes.forEach(function (value, index, array_nodes) {
+                var parent = $('#call_tree').jstree(true).get_node(value.parent)
+                var path = $('#call_tree').jstree(true).get_path(parent);
+                var path_ids = $('#call_tree').jstree(true).get_path(parent, null, true);
                 index = include(path, value.text);
                 if (index != -1) {
                     $('#call_tree').jstree(true).set_type(path_ids[index], "loop");
                     $('#call_tree').jstree(true).set_type(value.id, "loop");
+                    if (index < path.length) {
+                        $('#call_tree').jstree(true).set_type(value.parent, "loop");
+                    }
                 } else {
-                    createNode(value.parent, value.id, value.text, value.num, value.size, "last", value.type);
+                    if (include(parent.children, value.id) == -1) {
+                        createNode(value.parent, value.id, value.text, value.num, value.size, "last", value.type);
+                    }
                 }
             });
-            // $('#call_tree').jstree(true).refresh_node(data.node);
         }
     });
 
