@@ -46,3 +46,17 @@ class ReindexProjectError(Exception):
 
     def __repr__(self):
         return "ReindexProjectError"
+
+class GuruNotFoundError(Exception):
+    def __str__(self):
+        return "GuruNotFoundError"
+
+    def __repr__(self):
+        return "GuruNotFoundError"
+
+class CallgraphNotFoundError(Exception):
+    def __str__(self):
+        return "CallgraphNotFoundError"
+
+    def __repr__(self):
+        return "CallgraphNotFoundError"

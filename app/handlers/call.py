@@ -334,10 +334,14 @@ class GoToDefinitionAjaxHandler(BaseHandler):
         os.environ["GOPATH"] = project.go_path
         LOG.debug("GOPATH: %s", project.go_path)
 
-        r_json = get_definition_from_guru(file_path, line, ch)
-        if r_json:
-            r = json.loads(r_json)
-            data["file_path"] = r["definition"]["objpos"] if r.has_key("definition") and r["definition"].has_key("objpos") else ""
+        r = get_definition_from_guru(file_path, line, ch)
+        if r:
+            if r.has_key("definition") and r["definition"].has_key("objpos"):
+                data["file_path"] = r["definition"]["objpos"]
+            elif r.has_key("objpos"):
+                data["file_path"] = r["objpos"]
+            else:
+                data["file_path"] = ""
             data["desc"] = r["definition"]["desc"] if r.has_key("definition") and r["definition"].has_key("desc") else ""
         LOG.debug("GoToDefinition: %s", data)
 
@@ -366,9 +370,18 @@ class FindReferrersAjaxHandler(BaseHandler):
         os.environ["GOPATH"] = project.go_path
         LOG.debug("GOPATH: %s", project.go_path)
 
-        r_json = get_referrers_from_guru(file_path, line, ch)
-        if r_json:
-            r = json.loads(r_json)
+        r = get_referrers_from_guru(file_path, line, ch)
+        if isinstance(r, list):
+            data["file_path"] = r[0]["objpos"] if len(r) > 0 and r[0].has_key("objpos") else ""
+            data["desc"] = r[0]["desc"] if len(r) > 0 and r[0].has_key("desc") else ""
+            data["refs"] = []
+            if len(r) > 1:
+                for package in r[1:]:
+                    if package.has_key("refs"):
+                        for ref in package["refs"]:
+                            if ref.has_key("pos"):
+                                data["refs"].append(ref["pos"])
+        elif isinstance(r, map):
             data["file_path"] = r["referrers"]["objpos"] if r.has_key("referrers") and r["referrers"].has_key("objpos") else ""
             data["desc"] = r["referrers"]["desc"] if r.has_key("referrers") and r["referrers"].has_key("desc") else ""
             data["refs"] = r["referrers"]["refs"] if r.has_key("referrers") and r["referrers"].has_key("refs") else []

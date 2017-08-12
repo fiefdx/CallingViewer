@@ -22,6 +22,7 @@ from tornado.options import define, options
 from config import CONFIG
 from app import Application
 from utils import common
+from utils import common_utils
 from utils.index_whoosh import IX
 from utils.async_project_import import MultiProcessProjectImport as ProjectImport
 from models.project import Projects
@@ -53,6 +54,8 @@ if __name__ == "__main__":
                           max_size = 20,
                           backup_count = 5,
                           console = True)
+
+    common_utils.check_guru()
     http_server = tornado.httpserver.HTTPServer(Application(), no_keep_alive = False)
     common.Servers.HTTP_SERVER = http_server
     projects = Projects()

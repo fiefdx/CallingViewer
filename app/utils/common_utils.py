@@ -8,10 +8,15 @@ Created on 2016-07-20
 import os
 import logging
 import time
+import json
 import hashlib
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, STDOUT
+
+from utils import errors
 
 LOG = logging.getLogger(__name__)
+
+GURU = {}
 
 def sha1sum(content):
     '''
@@ -54,13 +59,50 @@ def make_callgraph_data(main_path, data_path):
         LOG.exception(e)
     return result
 
+def check_guru():
+    cmd = r'guru -help'
+    try:
+        p = Popen(cmd, shell = True, stdout = PIPE, stderr = STDOUT)
+        p.wait()
+        r = p.stdout.read()
+        LOG.debug("check_guru: %s", r)
+        if "-json" in r:
+            GURU["-json"] = True
+            GURU["cmd"] = "guru"
+        elif "-format" in r:
+            GURU["-format"] = True
+            GURU["cmd"] = "guru"
+        else:
+            cmd = r'golang-guru -help'
+            p = Popen(cmd, shell = True, stdout = PIPE, stderr = STDOUT)
+            p.wait()
+            r = p.stdout.read()
+            LOG.debug("check_guru: %s", r)
+            if "-json" in r:
+                GURU["-json"] = True
+                GURU["cmd"] = "golang-guru"
+            elif "-format" in r:
+                GURU["-format"] = True
+                GURU["cmd"] = "golang-guru"
+            else:
+                raise errors.GuruNotFoundError
+    except Exception, e:
+        LOG.exception(e)
+
 def get_definition_from_guru(file_path, line, ch):
     '''
     line: offset from 0
     ch: offset from 0
     '''
     result = False
-    cmd = r'guru -reflect -format json definition %s:#%s'
+    if GURU.has_key("cmd"):
+        cmd = r"%s" % GURU["cmd"]
+    else:
+        raise errors.GuruNotFoundError
+    if GURU.has_key("-json"):
+        cmd += r' -reflect -json definition %s:#%s'
+    else:
+        cmd += r' -reflect -format json definition %s:#%s'
     fp = open(file_path, "rb")
     offset = 0
     for l in xrange(line):
@@ -70,7 +112,7 @@ def get_definition_from_guru(file_path, line, ch):
     try:
         p = Popen(cmd % (file_path, offset), shell = True, stdout = PIPE)
         p.wait()
-        result = p.stdout.read()
+        result = json.loads(p.stdout.read())
         LOG.debug("get_definition_from_guru: %s", result)
     except Exception, e:
         LOG.exception(e)
@@ -82,7 +124,14 @@ def get_referrers_from_guru(file_path, line, ch):
     ch: offset from 0
     '''
     result = False
-    cmd = r'guru -reflect -format json referrers %s:#%s'
+    if GURU.has_key("cmd"):
+        cmd = r"%s" % GURU["cmd"]
+    else:
+        raise errors.GuruNotFoundError
+    if GURU.has_key("-json"):
+        cmd += r' -reflect -json referrers %s:#%s'
+    else:
+        cmd += r' -reflect -format json referrers %s:#%s'
     fp = open(file_path, "rb")
     offset = 0
     for l in xrange(line):
@@ -92,7 +141,23 @@ def get_referrers_from_guru(file_path, line, ch):
     try:
         p = Popen(cmd % (file_path, offset), shell = True, stdout = PIPE)
         p.wait()
-        result = p.stdout.read()
+        lines = p.stdout.readlines()
+        try:
+            result = json.loads("".join(lines))
+        except Exception, e:
+            json_str = "["
+            for line in lines:
+                if line == "}\n":
+                    json_str += "},\n"
+                else:
+                    json_str += line
+            if json_str[-2:] == ",\n":
+                json_str = json_str[:-2]
+            elif json_str[-2:] == ",":
+                json_str = json_str[:-1]
+            json_str += "\n]"
+            LOG.debug("get_referrers_from_guru json_str: %s", json_str)
+            result = json.loads(json_str)
         LOG.debug("get_referrers_from_guru: %s", result)
     except Exception, e:
         LOG.exception(e)
