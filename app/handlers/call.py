@@ -381,7 +381,7 @@ class FindReferrersAjaxHandler(BaseHandler):
                         for ref in package["refs"]:
                             if ref.has_key("pos"):
                                 data["refs"].append(ref["pos"])
-        elif isinstance(r, map):
+        elif isinstance(r, dict):
             data["file_path"] = r["referrers"]["objpos"] if r.has_key("referrers") and r["referrers"].has_key("objpos") else ""
             data["desc"] = r["referrers"]["desc"] if r.has_key("referrers") and r["referrers"].has_key("desc") else ""
             data["refs"] = r["referrers"]["refs"] if r.has_key("referrers") and r["referrers"].has_key("refs") else []
