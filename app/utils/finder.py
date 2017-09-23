@@ -151,7 +151,7 @@ class Finder(object):
             pass
         relation.pop()
 
-    def traverse_func(self, callee, relation = {"relation": [], "relation_func": []}, n = 0, filter_string = "wps.cn"):
+    def traverse_func(self, callee, relation = {"relation": [], "relation_func": []}, n = 0, filter_string = ""):
         if n > CONFIG["max_recursion"]:
             return
         n += 1
