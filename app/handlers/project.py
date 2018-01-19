@@ -37,9 +37,11 @@ def validate_params(project_name, project_path, go_path, main_path):
             if not os.path.exists(p) or not os.path.isdir(p):
                 LOG.debug("validate params invalid go path: %s", p)
                 return False
-        if not os.path.exists(main_path) or not os.path.isfile(main_path):
-            LOG.debug("validate params invalid main path: %s", main_path)
-            return False
+        main_paths = main_path.split()
+        for p in main_paths:
+            if not os.path.exists(p) or not os.path.isfile(p):
+                LOG.debug("validate params invalid main path: %s", p)
+                return False
     except Exception, e:
         LOG.exception(e)
         return False
@@ -68,7 +70,7 @@ class ProjectAjaxAddHandler(BaseHandler):
             projects = Projects()
             if project_name != "" and projects.exist(project_name):
                 raise errors.ExistProjectError
-            elif project_name != "" and not projects.exist(project_name) and os.path.exists(project_path) and os.path.isdir(project_path) and os.path.exists(main_path) and os.path.isfile(main_path):
+            elif project_name != "" and not projects.exist(project_name):
                 project = Project()
                 project.go_path = go_path
                 project.main_path = main_path
@@ -297,7 +299,7 @@ class ProjectAjaxEditHandler(BaseHandler):
             data["tree"] = []
             data["project"] = ""
             projects = Projects()
-            if project_name != "" and os.path.exists(project_path) and os.path.isdir(project_path) and os.path.exists(main_path) and os.path.isfile(main_path):
+            if project_name != "":
                 project = Project()
                 project.go_path = go_path
                 project.main_path = main_path
