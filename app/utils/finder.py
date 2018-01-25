@@ -62,7 +62,8 @@ class Finder(object):
         line = fp.readline()
         if self.called == True:
             while line != "":
-                LOG.debug("processing: line: %s", n)
+                if n % 100 == 0:
+                    LOG.debug("processing: line: %s", n)
                 line = line.strip()
                 caller, callee, src_path = line.split(" ")
                 caller = caller.replace("\"", "")
@@ -83,7 +84,8 @@ class Finder(object):
                 n += 1
         else:
             while line != "":
-                LOG.debug("processing: line: %s", n)
+                if n % 100 == 0:
+                    LOG.debug("processing: line: %s", n)
                 line = line.strip()
                 caller, callee, src_path = line.split(" ")
                 caller = caller.replace("\"", "")

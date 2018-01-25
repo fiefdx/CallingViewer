@@ -137,7 +137,8 @@ def update_whoosh_index_doc_num(index, item_iter, item_num, index_name, merge = 
                                                name = item.name)
                     else:
                         LOG.error("index_name error: in the update_whoosh_index_doc_num!")
-                    LOG.debug("Update index[%s] doc_id[%s]", index_name, item.id)
+                    if n % 100 == 0:
+                        LOG.debug("Update index[%s] doc_id[%s]", index_name, item.id)
                     if n == item_num:
                         writer.commit(merge = merge)
                         LOG.info("Commit index[%s] success.", index_name)
