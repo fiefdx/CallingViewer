@@ -110,6 +110,16 @@
     width: 750px;
 }
 
+a.partition_a,
+a.dir_name,
+a.dir_item {
+    cursor: pointer;
+}
+
+a.file_item {
+    cursor: default;
+}
+
 #add_project_modal .form-group button,
 #edit_project_modal .form-group button {
     width: 95px;
