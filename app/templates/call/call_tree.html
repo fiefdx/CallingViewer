@@ -80,21 +80,24 @@ body {
                         </div>
                         <div class="form-group">
                             <label class="control-label col-xs-4" for="project_path">{{_("Project Path")}}</label>
-                            <div class="col-xs-8">
+                            <div class="col-xs-6">
                                 <input class="form-control" type="text" name="project_path" autocomplete="off" id="project_path" placeholder="{{_("Project Path")}}">
                             </div>
+                            <button id="add_project_select_project_path_btn" class="btn btn-primary col-xs-2" type="button">{{_("Change")}}</button>
                         </div>
                         <div class="form-group">
                             <label class="control-label col-xs-4" for="go_path">{{_("Go Path")}}</label>
-                            <div class="col-xs-8">
+                            <div class="col-xs-6">
                                 <input class="form-control" type="text" name="go_path" autocomplete="off" id="go_path" placeholder="{{_("Go Path")}}">
                             </div>
+                            <button id="add_project_select_go_path_btn" class="btn btn-primary col-xs-2" type="button">{{_("Add")}}</button>
                         </div>
                         <div class="form-group">
                             <label class="control-label col-xs-4" for="main_path">{{_("Main Path")}}</label>
-                            <div class="col-xs-8">
+                            <div class="col-xs-6">
                                 <input class="form-control" type="text" name="main_path" autocomplete="off" id="main_path" placeholder="{{_("Main Path")}}">
                             </div>
+                            <button id="add_project_select_main_path_btn" class="btn btn-primary col-xs-2" type="button">{{_("Change")}}</button>
                         </div>
                     </div>
                 </div>
@@ -124,27 +127,30 @@ body {
                         </div>
                         <div class="form-group">
                             <label class="control-label col-xs-4" for="project_path">{{_("Project Path")}}</label>
-                            <div class="col-xs-8">
+                            <div class="col-xs-6">
                                 <input class="form-control" type="text" name="project_path" autocomplete="off" id="project_path" placeholder="{{_("Project Path")}}">
                             </div>
+                            <button id="edit_project_select_project_path_btn" class="btn btn-primary col-xs-2" type="button">{{_("Change")}}</button>
                         </div>
                         <div class="form-group">
                             <label class="control-label col-xs-4" for="go_path">{{_("Go Path")}}</label>
-                            <div class="col-xs-8">
+                            <div class="col-xs-6">
                                 <input class="form-control" type="text" name="go_path" autocomplete="off" id="go_path" placeholder="{{_("Go Path")}}">
                             </div>
+                            <button id="edit_project_select_go_path_btn" class="btn btn-primary col-xs-2" type="button">{{_("Add")}}</button>
                         </div>
                         <div class="form-group">
                             <label class="control-label col-xs-4" for="main_path">{{_("Main Path")}}</label>
-                            <div class="col-xs-8">
+                            <div class="col-xs-6">
                                 <input class="form-control" type="text" name="main_path" autocomplete="off" id="main_path" placeholder="{{_("Main Path")}}">
                             </div>
+                            <button id="edit_project_select_main_path_btn" class="btn btn-primary col-xs-2" type="button">{{_("Change")}}</button>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-default" type="button" data-dismiss="modal" aria-hidden="true">{{_("Cancel")}}</button>
-                    <button id="edit_project_btn" class="btn btn-primary" type="button" data-dismiss="modal" aria-hidden="true">{{_("Edit")}}</button>
+                    <button id="edit_project_btn" class="btn btn-primary" type="button" data-dismiss="modal" aria-hidden="true">{{_("Save")}}</button>
                 </div>
             </div>
         </div>
@@ -280,13 +286,68 @@ body {
         </div>
     </form>
 </div>
+<div id="file_picker_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="filePickerModalLabel" aria-hidden="true">
+    <form id="form_picker" class="form-horizontal" enctype="multipart/form-data">
+        <div id="dialog_picker" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="myModalLabel" class="modal-title">{{_("Select a File/Directory")}}</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        <div id="row_container" class="row-fluid">
+                            <ol id="path_bar" class="breadcrumb">
+                            </ol>
+                            <div id="disk_container" class="row-fluid">
+                                <div id="disk_partions" class="col-xs-2">
+                                    <div id="partitions_div" class="list-group">
+                                    </div>
+                                </div>
+                                <div id="file_list" class="fluid">
+                                    <table class="table table-bordered table-hover header-fixed">
+                                        <thead>
+                                            <tr>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table_body">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" type="button" data-dismiss="modal" aria-hidden="true">{{_("Cancel")}}</button>
+                    <button id="select_path_btn" class="btn btn-primary" type="button" data-dismiss="modal" aria-hidden="true">{{_("Select")}}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
 {% end %}
 
 {% block javascript %}
 <script src="{{ static_url('js/jstree/jstree.js') }}"></script>
+<script src="{{ static_url('js/js-base64/base64.js') }}"></script>
 <script src="{{ static_url('js/typeahead.bundle.js') }}"></script>
 <script src="{{ static_url('js/handlebars-v1.3.0.js') }}"></script>
 <script type="text/javascript">
+var $table_header = $(".header-fixed > thead");
+var $table_header_tr = $(".header-fixed > thead > tr");
+var $table_body = $(".header-fixed > tbody");
+var $path_bar = $("#path_bar");
+var $partitions_div = $("#partitions_div");
+var scrollBarSize = getBrowserScrollSize();
+
+var dir_path = [];
+var current_file = "";
+var home_path = [];
+var home_path_string = "";
+var disk_partitions = [];
+var select_path_type = "";
+
 var current_project = "";
 var project_name = "";
 var project_path = "";
@@ -304,6 +365,14 @@ var $edit_project_btn = $('#edit_project_btn');
 var $del_project_btn = $('#del_project_btn');
 var $reindex_project_btn = $('#reindex_project_btn');
 var $search_btn = $('#search_button');
+var $select_path_btn = $('#select_path_btn');
+
+var $add_project_select_project_path_btn = $('#add_project_select_project_path_btn');
+var $add_project_select_go_path_btn = $('#add_project_select_go_path_btn');
+var $add_project_select_main_path_btn = $('#add_project_select_main_path_btn');
+var $edit_project_select_project_path_btn = $('#edit_project_select_project_path_btn');
+var $edit_project_select_go_path_btn = $('#edit_project_select_go_path_btn');
+var $edit_project_select_main_path_btn = $('#edit_project_select_main_path_btn');
 
 $project_select.change(changeProject);
 $add_btn.bind("click", showAddProject);
@@ -315,6 +384,296 @@ $del_project_btn.bind("click", delProject);
 $reindex_btn.bind("click", showReindexProject);
 $reindex_project_btn.bind("click", reindexProject);
 $search_btn.bind("click", search);
+$select_path_btn.bind("click", updatePath);
+
+$add_project_select_project_path_btn.bind("click", selectProjectPath);
+$add_project_select_go_path_btn.bind("click", selectGoPath);
+$add_project_select_main_path_btn.bind("click", selectMainPath);
+$edit_project_select_project_path_btn.bind("click", editProjectPath);
+$edit_project_select_go_path_btn.bind("click", editGoPath);
+$edit_project_select_main_path_btn.bind("click", editMainPath);
+
+function selectProjectPath() {
+    select_path_type = "select_project_path";
+    changePath();
+}
+
+function selectGoPath() {
+    select_path_type = "select_go_path";
+    changePath();
+}
+
+function selectMainPath() {
+    select_path_type = "select_main_path";
+    changePath();
+}
+
+function editProjectPath() {
+    select_path_type = "edit_project_path";
+    changePath();
+}
+
+function editGoPath() {
+    select_path_type = "edit_go_path";
+    changePath();
+}
+
+function editMainPath() {
+    select_path_type = "edit_main_path";
+    changePath();
+}
+
+function updatePath() {
+    var dir = dir_path.join("/");
+    if (dir.startsWith("/") && dir.length > 1) {
+        dir = dir.substring(1, dir.length);
+    }
+    var current_path = dir + "/" + current_file;
+    if (select_path_type == "select_project_path") {
+        $("#add_project_modal input#project_path").val(current_path);
+    } else if (select_path_type == "select_go_path") {
+        var old_path = $("#add_project_modal input#go_path").val();
+        if (old_path != "") {
+            current_path = old_path + ":" + current_path
+        }
+        $("#add_project_modal input#go_path").val(current_path);
+    } else if (select_path_type == "select_main_path") {
+        $("#add_project_modal input#main_path").val(current_path);
+    } else if (select_path_type == "edit_project_path") {
+        $("#edit_project_modal input#project_path").val(current_path);
+    } else if (select_path_type == "edit_go_path") {
+        var old_path = $("#edit_project_modal input#go_path").val();
+        if (old_path != "") {
+            current_path = old_path + ":" + current_path
+        }
+        $("#edit_project_modal input#go_path").val(current_path);
+    } else if (select_path_type == "edit_main_path") {
+        $("#edit_project_modal input#main_path").val(current_path);
+    }
+}
+
+function changePath(event, dir = "") {
+    var ajax_url = "/listdir";
+    if (dir != "") {
+        ajax_url += "?p=" + encodeURIComponent(dir);
+    }
+    $.ajax({
+        type: "get",
+        dataType: "json",
+        async: false,
+        url: ajax_url,
+        success: function(data, textStatus) {
+            if(textStatus == "success" && !data.exception) {
+                $table_header_tr.empty();
+                $table_body.empty();
+                $path_bar.empty();
+                $partitions_div.empty();
+                var columns = ["name", "type", "size"]; // "mtime"
+                columns.forEach(function (value, index, arrays) {
+                    $table_header_tr.append(
+                        '<th id="' + value + '"><div class="outer"><div class="inner">&nbsp;' + value + '&nbsp;&nbsp;</div></div></th>'
+                    );
+                });
+                if (data.dirs) {
+                    data.dirs.forEach(function (value, index, arrays) {
+                        var tr = '<tr id="table_item">';
+                        for (var i=0; i<columns.length; i++) {
+                            var col = columns[i];
+                            if (col == 'name') {
+                                tr += '<td id="' + col + '">' +
+                                            '<div class="outer">' +
+                                                '<div class="inner">&nbsp;' +
+                                                    '<span>' +
+                                                        '<input class="dir_item" name="dir" id="dir_' + index + '" type="checkbox">' +
+                                                    '</span>&nbsp;' +
+                                                    '<span id="status_dir_' + value.sha1 + '" class="status">' +
+                                                    '</span>' +
+                                                    '<span id="dir_' + index + '" class="dir_span glyphicon glyphicon-folder-close">' +
+                                                    '</span>' +
+                                                    '<a class="dir_item" id="' + value.name + '">&nbsp;' + value.name +
+                                                    '</a>' +
+                                                '</div>' +
+                                            '</div>' +
+                                        '</td>';
+                            } else if (col == 'type') {
+                                tr += '<td id="' + col + '"><div class="outer"><div class="inner">&nbsp;' + value.type + '</div></div></td>';
+                            } else if (col == 'size') {
+                                tr += '<td id="' + col + '"><div class="outer"><div class="inner">&nbsp;' + value.size + '</div></div></td>';
+                            } else if (col == 'mtime') {
+                                tr += '<td id="' + col + '"><div class="outer"><div class="inner">&nbsp;' + value.mtime + '</div></div></td>';
+                            }
+                        }
+                        tr += '</tr>';
+                        $table_body.append(tr);
+                    });
+                }
+                
+                if (data.files) {
+                    data.files.forEach(function (value, index, arrays) {
+                        var tr = '<tr id="table_item">';
+                        for (var i=0; i<columns.length; i++) {
+                            var col = columns[i];
+                            if (col == 'name') {
+                                tr += '<td id="' + col + '">' +
+                                            '<div class="outer">' +
+                                                '<div class="inner">&nbsp;' +
+                                                    '<span>' +
+                                                        '<input class="file_item" name="file" id="file_' + index + '" type="checkbox">' +
+                                                    '</span>&nbsp;' +
+                                                    '<span id="status_file_' + value.sha1 + '" class="status">' +
+                                                    '</span>' +
+                                                    '<span id="file_' + index + '" class="file_span glyphicon glyphicon-file">' +
+                                                    '</span>' +
+                                                    '<a class="file_item" id="' + value.name + '">&nbsp;' + value.name +
+                                                    '</a>' +
+                                                '</div>' +
+                                            '</div>' +
+                                        '</td>';
+                            } else if (col == 'type') {
+                                tr += '<td id="' + col + '"><div class="outer"><div class="inner">&nbsp;' + value.type + '</div></div></td>';
+                            } else if (col == 'size') {
+                                tr += '<td id="' + col + '"><div class="outer"><div class="inner">&nbsp;' + value.size + '</div></div></td>';
+                            } else if (col == 'mtime') {
+                                tr += '<td id="' + col + '"><div class="outer"><div class="inner">&nbsp;' + value.mtime + '</div></div></td>';
+                            }
+                        }
+                        tr += '</tr>';
+                        $table_body.append(tr);
+                    });
+                }
+                
+                if (data.dir_path) {
+                    dir_path = data.dir_path;
+                    data.dir_path.forEach(function (value, index, arrays) {
+                        var string = "";
+                        if (value == "/") {
+                            value = "ROOT";
+                        }
+                        if (index == arrays.length - 1) {
+                            string = '<li class="active">' + value + '</li>';
+                        }
+                        else {
+                            string = '<li><a id="dir_' + index + '" class="dir_name">' + value + '</a></li>';
+                        }
+                        $path_bar.append(string);
+                    });
+                }
+                
+                if (data.disk_partitions) {
+                    data.disk_partitions.forEach(function (value, index, arrays) {
+                        $partitions_div.append(
+                            '<a id="partition_' + index + '" class="list-group-item partition_a">' +
+                            '<span class="glyphicon glyphicon-hdd"></span>' +
+                            '<span id="partition_name">&nbsp;' + value.device + '</span>' +
+                            '</a>'
+                        )
+                    });
+
+                    disk_partitions = data.disk_partitions;
+                }
+                
+                if (data.current_partition) {
+                    $("a#partition_" + data.current_partition).addClass("active");
+                }
+                
+                if (data.home_path) {
+                    home_path = data.home_path;
+                }
+                
+                if (data.home_path_string) {
+                    home_path_string = data.home_path_string;
+                }
+                
+                $("a.dir_name").bind('click', changeDir);
+                $("a.dir_item").bind('dblclick', openDir);
+                $("a.partition_a").bind('click', changePartition);
+                $("tr#table_item").bind('click', selectOne);
+                $("input[type=checkbox][name=dir]").bind('click', inputSelect);
+                $("input[type=checkbox][name=file]").bind('click', inputSelect);
+                $table_body.scrollTop(0);
+                setTimeout(function() {
+                    var tbody = document.getElementById("table_body");
+                    if (hasVerticalScrollBar(tbody)) {
+                        $table_header.css({"margin-right": scrollBarSize.width});
+                    } else {
+                        $table_header.css({"margin-right": 0});
+                    }
+                }, 250);
+            }
+            $('#file_picker_modal').modal('show');
+
+            $('#wait_reindex_project_modal').modal('hide');
+
+            if (data.exception) {
+                $('#operation_fail_modal').modal('show');
+            }
+        }
+    });
+}
+
+function changeDir() {
+    var index = Number($(this).attr("id").split("_")[1]) + 1;
+    dir_path = dir_path.slice(0, index);
+    var dir = dir_path.join("/");
+    if (dir.startsWith("/") && dir.length > 1) {
+        dir = dir.substring(1, dir.length);
+    }
+    changePath(null, dir);
+}
+
+function openDir(event) {
+    var dir_name = $(this).attr("id");
+    dir_path.push(dir_name);
+    var dir = dir_path.join("/");
+    if (dir.startsWith("/") && dir.length > 1) {
+        dir = dir.substring(1, dir.length);
+    }
+    changePath(null, dir);
+}
+
+function changePartition() {
+    var partition_num = Number($(this).attr("id").split("_")[1]);
+    var dir_path = disk_partitions[partition_num].mountpoint;
+    var dir = dir_path.join("/");
+    if (dir.startsWith("/") && dir.length > 1) {
+        dir = dir.substring(1, dir.length);
+    }
+    changePath(null, dir);
+}
+
+function selectOne(event) {
+    if ($(this).find("input[type=checkbox]:checked").length) {
+        $(this).find("input[type=checkbox]").prop('checked', false);
+        $(this).removeClass("success");
+        current_file = "";
+    } else {
+        unselectAll();
+        $(this).find("input[type=checkbox]").prop('checked', true);
+        $(this).addClass("success");
+        current_file = $(this).find("td a").attr("id");
+    }
+    event.stopPropagation()
+}
+
+function inputSelect(event) {
+    if (this.checked) {
+        unselectAll();
+        $(this).prop('checked', true);
+        $(this).parent("span").parent("div").parent("div").parent("td").parent("tr").addClass("success");
+        current_file = $(this).parent("span").parent("div").find("a").attr("id");
+    } else {
+        $(this).parent("span").parent("div").parent("div").parent("td").parent("tr").removeClass("success");
+        current_file = "";
+    }
+    event.stopPropagation()
+}
+
+function unselectAll() {
+    $("input[type=checkbox][name=dir]").prop('checked', false);
+    $("input[type=checkbox][name=dir]").parent("span").parent("div").parent("div").parent("td").parent("tr").removeClass("success");
+    $("input[type=checkbox][name=file]").prop('checked', false);
+    $("input[type=checkbox][name=file]").parent("span").parent("div").parent("div").parent("td").parent("tr").removeClass("success");
+}
 
 function get_leaf(q) {
     var result = {"nodes": [], "tree": [], "flag": false};
@@ -944,6 +1303,39 @@ function search() {
             }
         }
     });
+}
+
+function hasVerticalScrollBar(el) {
+    var result = el.scrollHeight > el.clientHeight;
+    return result;
+}
+
+function getBrowserScrollSize() {
+    var css = {
+        "border":  "none",
+        "height":  "200px",
+        "margin":  "0",
+        "padding": "0",
+        "width":   "200px"
+    };
+
+    var inner = $("<div>").css($.extend({}, css));
+    var outer = $("<div>").css($.extend({
+        "left":       "-1000px",
+        "overflow":   "scroll",
+        "position":   "absolute",
+        "top":        "-1000px"
+    }, css)).append(inner).appendTo("body")
+    .scrollLeft(1000)
+    .scrollTop(1000);
+
+    var scrollSize = {
+        "height": (outer.offset().top - inner.offset().top) || 0,
+        "width": (outer.offset().left - inner.offset().left) || 0
+    };
+
+    outer.remove();
+    return scrollSize;
 }
 </script>
 {% end %}

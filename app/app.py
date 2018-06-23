@@ -17,6 +17,7 @@ from config import CONFIG
 from handlers import test
 from handlers import call
 from handlers import project
+from handlers import listdir
 
 cwd = os.path.split(os.path.realpath(__file__))[0]
 
@@ -38,6 +39,7 @@ class Application(tornado.web.Application):
                     (r"/project/view", project.ViewHandler),
                     (r"/project/definition", call.GoToDefinitionAjaxHandler),
                     (r"/project/referrers", call.FindReferrersAjaxHandler),
+                    (r"/listdir", listdir.ListDirHandler),
                     (r"/test", test.TestHandler),
                     ]
         settings = dict(debug = CONFIG["app_debug"],

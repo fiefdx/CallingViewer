@@ -7,3 +7,4 @@ whoosh
 jieba
 chardet
 pyyaml
+psutil

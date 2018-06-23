@@ -70,6 +70,7 @@
     margin-bottom: 20px;
 }
 
+#form_picker,
 #form_reindex,
 #form_wait,
 #form_delete,
@@ -84,12 +85,34 @@
     padding: 0px
 }
 
+#file_picker_modal {
+    z-index: 2000;
+}
+
+#operation_fail_modal {
+    z-index: 2500;
+}
+
+#file_picker_modal .well {
+    padding: 0px;
+    margin-bottom: 0px;
+}
+
 #form_info .modal-body span {
     margin-top: -10px;
 }
 
 .modal-dialog {
     width: 700px;
+}
+
+#file_picker_modal .modal-dialog {
+    width: 750px;
+}
+
+#add_project_modal .form-group button,
+#edit_project_modal .form-group button {
+    width: 95px;
 }
 
 div#dialog_referrers {
@@ -139,5 +162,102 @@ span.node-line-num {
 span.node-children-num {
     margin-left: 5px;
     color: #4aa564;
+    font-size: 12px;
+}
+
+span.status {
+    color: #FF3300;
+}
+
+div#disk_partions {
+    margin-top: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    width: 160px;
+}
+
+div#file_list {
+    margin-left: 162px;
+    min-width: 300px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.header-fixed {
+    table-layout: fixed;
+    margin-bottom: 0px;
+    width: 100%;
+}
+
+tr {
+    width: 100%;
+    display: inline-table;
+}
+
+td {
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+div.outer {
+    position: relative;
+    height: 16px;
+}
+
+div.inner {
+    position: absolute;
+    width: 100%;
+    white-space: nowrap; 
+    overflow: hidden; 
+    overflow: ellipsis; 
+}
+
+.header-fixed > thead {
+    display: block;
+    /*margin-right: 15px;*/
+}
+
+.header-fixed > tbody {
+    display: block;
+    overflow-y: auto; 
+    width: 100%;
+}
+
+.breadcrumb {
+    margin-bottom: 0px;
+    line-height: 20px;
+}
+
+tbody {
+    height: 300px;
+}
+
+th {
+    cursor: pointer;
+}
+
+th#name,
+td#name {
+    min-width: 250px;
+}
+
+th#type,
+td#type {
+    min-width: 80px;
+}
+
+th#mtime,
+td#mtime {
+    min-width: 160px;
+}
+
+th#size,
+td#size {
+    min-width: 90px;
+}
+
+ol.breadcrumb {
     font-size: 12px;
 }

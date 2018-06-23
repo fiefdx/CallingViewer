@@ -12,6 +12,8 @@ import json
 import hashlib
 from subprocess import Popen, PIPE, STDOUT
 
+import psutil
+
 from utils import errors
 
 LOG = logging.getLogger(__name__)
@@ -23,9 +25,14 @@ def sha1sum(content):
     param content must be unicode
     result is unicode
     '''
-    m = hashlib.sha1(content.encode("utf-8"))
-    m.digest()
-    result = m.hexdigest().decode("utf-8")
+    result = ""
+    try:
+        m = hashlib.sha1(content.encode("utf-8"))
+        m.digest()
+        result = m.hexdigest().decode("utf-8")
+    except Exception, e:
+        LOG.error("sha1sum error, content: %s", content)
+        LOG.exception(e)
     return result
 
 def sha256sum(content):
@@ -250,30 +257,80 @@ def listdir(dir_path = ".", sort_by = "name", desc = False):
         for d in dirs_list:
             d_path = os.path.join(dir_path, d)
             dirs.append({
-                "num":n,
-                "name":d,
-                "sha1":sha1sum(d_path),
-                "type":"Directory",
-                "size":os.path.getsize(d_path),
-                "ctime":time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getctime(d_path))),
-                "mtime":time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(d_path)))
+                "num": n,
+                "name": d,
+                "sha1": sha1sum(d_path),
+                "type": "Directory",
+                "size": os.path.getsize(d_path),
+                "ctime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getctime(d_path))),
+                "mtime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(d_path)))
             })
             n += 1
         for f in files_list:
             f_path = os.path.join(dir_path, f)
             files.append({
-                "num":n,
-                "name":f,
-                "sha1":sha1sum(f_path),
-                "type":os.path.splitext(f)[-1],
-                "size":os.path.getsize(f_path),
-                "ctime":time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getctime(f_path))),
-                "mtime":time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(f_path)))
+                "num": n,
+                "name": f,
+                "sha1": sha1sum(f_path),
+                "type": os.path.splitext(f)[-1],
+                "size": os.path.getsize(f_path),
+                "ctime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getctime(f_path))),
+                "mtime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(f_path)))
             })
             n += 1
     except Exception, e:
         LOG.exception(e)
     return listsort(dirs, files, sort_by = sort_by, desc = desc)
+
+def joinpath(dir_list):
+    dir_path = dir_list[0]
+    dir_list = dir_list[1:]
+    for d in dir_list:
+        dir_path = os.path.join(dir_path, d)
+    return dir_path
+
+def splitpath(dir_path):
+    dir_list = []
+    dir_path, dir_last = os.path.split(dir_path)
+    while dir_last != "":
+        dir_list.append(dir_last)
+        dir_path, dir_last = os.path.split(dir_path)
+    dir_list.append(dir_path)
+    dir_list.reverse()
+    return dir_list
+
+def listdir_with_partitions(dir_path = u"", sort_by = "name", desc = False):
+    home_path = os.path.expanduser("~").decode("utf-8")
+    if dir_path == "":
+        dir_path = home_path
+    data = {}
+    try:
+        disk_usage = psutil.disk_usage(dir_path)
+        disk_partitions = psutil.disk_partitions()
+        dirs, files = listdir(dir_path = dir_path, sort_by = sort_by, desc = desc)
+        data["dirs"] = dirs
+        data["files"] = files
+        data["dir_path"] = splitpath(dir_path)
+        data["home_path"] = splitpath(home_path)
+        data["home_path_string"] = home_path
+        data["disk_usage"] = {
+            "total": get_file_size(disk_usage.total),
+            "used": get_file_size(disk_usage.used),
+            "free": get_file_size(disk_usage.free),
+            "percent": disk_usage.percent
+        }
+        data["disk_partitions"] = [{"mountpoint": splitpath(p.mountpoint), "device": p.device} for p in disk_partitions]
+        p_mountpoint_length = 0
+        for n, p in enumerate(data["disk_partitions"]):
+            mountpoint_path = joinpath(p["mountpoint"])
+            if mountpoint_path in dir_path and len(mountpoint_path) > p_mountpoint_length:
+                p_mountpoint_length = len(mountpoint_path)
+                data["current_partition"] = n
+    except OSError, e:
+        raise Exception("%s" % e)
+    except Exception, e:
+        LOG.exception(e)
+    return data
 
 def get_mode(ext):
     mode_map = {".go": "text/x-go",
